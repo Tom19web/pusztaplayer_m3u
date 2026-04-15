@@ -11,16 +11,20 @@
 import { getRoute, go }                            from './core/router.js';
 import { renderSidebar }                           from './components/sidebar.js';
 import { renderTopbar }                            from './components/topbar.js';
-import { getUser, getWatchHistory }                from './store/selectors.js';
+import { getUser }                                 from './store/selectors.js';
 import { setCurrentPlayerItem, setView, setUser }  from './store/actions.js';
 import { renderHomeView, renderHomeLoadingView, bindLiveNowEpg } from './views/home.js';
 import { renderLiveView, renderLiveLoadingView }   from './views/live.js';
-import { renderMoviesView, renderMoviesLoadingView, getAllMovies } from './views/movies.js';
-import { renderSeriesView, renderSeriesLoadingView, getAllSeries } from './views/series.js';
+import { renderMoviesView, renderMoviesLoadingView } from './views/movies.js';
+import { renderSeriesView, renderSeriesLoadingView } from './views/series.js';
 import { renderFavoritesView }                     from './views/favorites.js';
 import { renderPlayerView, renderPlayerLoadingView } from './views/player-view.js';
 import { playerService }                           from './services/player.js';
-import { xtreamLogin, initPlaylistFromCache, clearImportedPlaylist, loadXtreamCredentials } from './services/playlist-import.js';
+import { xtreamGetVodInfo, xtreamGetSeriesInfo }   from './services/xtream-api.js';
+import {
+  xtreamLogin, initPlaylistFromCache, clearImportedPlaylist,
+  loadXtreamCredentials, getImportedPlaylist
+}                                                  from './services/playlist-import.js';
 
 import { renderHeartBtn, bindFavoriteButtons, bindFavMovieCards, bindFavSeriesCards } from './components/favorites-bindings.js';
 import { bindGroupFilter, bindMoviesFilter, bindSeriesFilter, bindLoadMore, bindMoviesLoadMore, bindSeriesLoadMore } from './components/filters.js';
@@ -87,7 +91,6 @@ async function renderApp() {
   bindRouteEvents();
   bindLiveInteractions();
 
-  // Szűrők + Load More — callbacks-ként átadjuk a szükséges bind-függvényeket
   bindLoadMore(bindLiveInteractions, bindRouteEvents, bindFavoriteButtons);
   bindMoviesLoadMore(bindMovieCards, bindRouteEvents, bindFavoriteButtons);
   bindSeriesLoadMore(bindSeriesDetailPanel, bindSeriesCards, bindRouteEvents, bindFavoriteButtons);
@@ -155,10 +158,10 @@ function bindLiveInteractions() {
   const updatePanel = btn => {
     channelButtons.forEach(item => item.classList.remove('active'));
     btn.classList.add('active');
-    title.textContent          = btn.dataset.channelTitle;
-    status.textContent         = btn.dataset.channelStatus;
-    group.textContent          = btn.dataset.channelGroup;
-    play.dataset.openPlayer    = btn.dataset.channelKey;
+    title.textContent       = btn.dataset.channelTitle;
+    status.textContent      = btn.dataset.channelStatus;
+    group.textContent       = btn.dataset.channelGroup;
+    play.dataset.openPlayer = btn.dataset.channelKey;
     clearTimeout(epgTimer);
     epgTimer = setTimeout(() => loadEpgIntoPanel(btn.dataset.channelStreamId || ''), 300);
   };
@@ -182,7 +185,7 @@ function bindLiveInteractions() {
    ═══════════════════════════════════════════════════════════ */
 
 function bindMovieCards() {
-  const panel  = document.getElementById('movie-detail-panel');
+  const panel   = document.getElementById('movie-detail-panel');
   if (!panel) return;
   const titleEl = document.getElementById('movie-detail-title');
   const groupEl = document.getElementById('movie-detail-group');
@@ -191,8 +194,6 @@ function bindMovieCards() {
   const creds   = loadXtreamCredentials();
 
   let vodInfoTimer = null;
-
-  const { xtreamGetVodInfo } = await import('./services/xtream-api.js').catch(() => ({}));
 
   const updatePanel = (card) => {
     document.querySelectorAll('[data-movie-key]').forEach(c => c.classList.remove('active'));
@@ -208,7 +209,7 @@ function bindMovieCards() {
     if (infoEl)  infoEl.innerHTML = '<div style="color:var(--color-text-muted);font-size:.85rem;margin-top:4px">⏳ Info betöltése...</div>';
 
     clearTimeout(vodInfoTimer);
-    if (!creds || !streamId || !xtreamGetVodInfo) { if (infoEl) infoEl.innerHTML = ''; return; }
+    if (!creds || !streamId) { if (infoEl) infoEl.innerHTML = ''; return; }
 
     vodInfoTimer = setTimeout(async () => {
       try {
@@ -274,7 +275,7 @@ function bindSeriesDetailPanel() {
 
   let infoTimer = null;
 
-  const updatePanel = async (card) => {
+  const updatePanel = (card) => {
     document.querySelectorAll('[data-open-series]').forEach(c => c.classList.remove('active'));
     card.classList.add('active');
     const seriesId = card.dataset.openSeries;
@@ -291,7 +292,6 @@ function bindSeriesDetailPanel() {
 
     infoTimer = setTimeout(async () => {
       try {
-        const { xtreamGetSeriesInfo } = await import('./services/xtream-api.js');
         const data        = await xtreamGetSeriesInfo(creds.username, creds.password, seriesId);
         const info        = data.info || {};
         const episodes    = data.episodes || {};
@@ -361,20 +361,20 @@ function bindSeriesCards() {
    ═══════════════════════════════════════════════════════════ */
 
 function bindNextEpisode() {
-  const { getImportedPlaylist } = await import('./services/playlist-import.js').catch(() => ({}));
   document.querySelectorAll('.next-ep-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const key      = btn.dataset.epKey;
-      const url      = btn.dataset.epUrl;
-      const title    = btn.dataset.epTitle;
-      const seriesId = btn.dataset.epSeriesId;
+      const key       = btn.dataset.epKey;
+      const url       = btn.dataset.epUrl;
+      const title     = btn.dataset.epTitle;
+      const seriesId  = btn.dataset.epSeriesId;
       const seasonNum = btn.dataset.epSeason;
       if (!key || !url) return;
-      const playlist = getImportedPlaylist?.();
+      const playlist = getImportedPlaylist();
       if (playlist) {
         if (!(playlist.series || []).find(s => s.key === key)) {
           playlist.series = playlist.series || [];
-          playlist.series.push({ key, title, streamUrl: url, type: 'series', seriesId: seriesId || null, seasonNum: seasonNum || null, group: '' });
+          playlist.series.push({ key, title, streamUrl: url, type: 'series',
+            seriesId: seriesId || null, seasonNum: seasonNum || null, group: '' });
         }
       }
       setCurrentPlayerItem(key);
@@ -397,7 +397,7 @@ function bindXtreamLogin() {
       const username = document.getElementById('xtream-username')?.value.trim();
       const password = document.getElementById('xtream-password')?.value.trim();
       if (!username || !password) { statusEl.textContent = 'Add meg a felhasználónevet és jelszót.'; return; }
-      loginBtn.disabled = true;
+      loginBtn.disabled    = true;
       loginBtn.textContent = '⏳ Betöltés...';
       statusEl.textContent = 'Csatlakozás...';
       try {
@@ -406,7 +406,7 @@ function bindXtreamLogin() {
         statusEl.textContent = `✓ ${playlist.liveChannels?.length ?? 0} élő · ${playlist.movies?.length ?? 0} film · ${playlist.series?.length ?? 0} sorozat betöltve.`;
         setTimeout(() => { navigateTo('live'); renderApp(); }, 600);
       } catch (err) {
-        loginBtn.disabled = false;
+        loginBtn.disabled    = false;
         loginBtn.textContent = '▶ Bejelentkezés';
         statusEl.textContent = '⚠ ' + err.message;
       }
