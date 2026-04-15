@@ -1,4 +1,21 @@
-.view-title{margin:0 0 6px}.muted{color:var(--muted)}.detail-card dl{margin:0;display:grid;gap:10px}.detail-card dt{font-weight:800}.detail-card dd{margin:4px 0 0;color:#333}
+.view-title {
+  margin: 0 0 6px;
+}
+.muted {
+  color: var(--muted);
+}
+.detail-card dl {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+.detail-card dt {
+  font-weight: 800;
+}
+.detail-card dd {
+  margin: 4px 0 0;
+  color: #333;
+}
 
 /* ═══════════════════════════════════════════════
    FAV-HEART — szívgomb (minden kártyán)
@@ -11,7 +28,7 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: rgba(0,0,0,.55);
+  background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(4px);
   border: none;
   cursor: pointer;
@@ -21,8 +38,12 @@
   font-size: 1rem;
   color: #fff;
   opacity: 0;
-  transform: scale(.8);
-  transition: opacity .18s, transform .18s, background .18s, color .18s;
+  transform: scale(0.8);
+  transition:
+    opacity 0.18s,
+    transform 0.18s,
+    background 0.18s,
+    color 0.18s;
   line-height: 1;
   padding: 0;
 }
@@ -36,15 +57,15 @@
   opacity: 1 !important;
   transform: scale(1) !important;
   color: #e63950;
-  background: rgba(0,0,0,.65);
+  background: rgba(0, 0, 0, 0.65);
 }
 .fav-heart:hover {
-  background: rgba(230,57,80,.85);
+  background: rgba(230, 57, 80, 0.85);
   color: #fff;
   transform: scale(1.15) !important;
 }
 .fav-heart--active:hover {
-  background: rgba(0,0,0,.75);
+  background: rgba(0, 0, 0, 0.75);
   color: #aaa;
 }
 
@@ -63,28 +84,32 @@
   gap: 6px;
   padding: 7px 16px;
   border-radius: 20px;
-  border: 1.5px solid rgba(255,255,255,.18);
-  background: rgba(255,255,255,.06);
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
   color: var(--color-text-muted, #aaa);
-  font-size: .88rem;
+  font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background .18s, border-color .18s, color .18s, transform .15s;
+  transition:
+    background 0.18s,
+    border-color 0.18s,
+    color 0.18s,
+    transform 0.15s;
 }
 .fav-player-btn:hover {
-  background: rgba(230,57,80,.15);
+  background: rgba(230, 57, 80, 0.15);
   border-color: #e63950;
   color: #e63950;
   transform: scale(1.03);
 }
 .fav-player-btn--active {
-  background: rgba(230,57,80,.18);
+  background: rgba(230, 57, 80, 0.18);
   border-color: #e63950;
   color: #e63950;
 }
 .fav-player-btn--active:hover {
-  background: rgba(255,255,255,.06);
-  border-color: rgba(255,255,255,.18);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.18);
   color: var(--color-text-muted, #aaa);
 }
 
@@ -100,7 +125,7 @@
   gap: 10px;
   margin-bottom: 14px;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--color-border, rgba(255,255,255,.08));
+  border-bottom: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
 }
 .fav-section-icon {
   font-size: 1.3rem;
@@ -114,10 +139,11 @@
 }
 
 /* Live kedvencek – kisebb csatorna-rács */
-.fav-live-grid {
+.fav-live-grid,
+.fav-grid--live {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
 }
 .fav-card {
   position: relative;
@@ -138,16 +164,16 @@
   padding: 28px 16px;
   text-align: center;
   color: var(--color-text-muted, #888);
-  background: rgba(255,255,255,.03);
+  background: rgba(255, 255, 255, 0.03);
   border-radius: 10px;
-  border: 1px dashed rgba(255,255,255,.08);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
 }
 .fav-empty-icon {
   font-size: 2rem;
 }
 .fav-empty p {
   margin: 0;
-  font-size: .9rem;
+  font-size: 0.9rem;
   line-height: 1.5;
 }
 
@@ -159,4 +185,328 @@
   padding: 60px 20px;
   text-align: center;
   color: var(--color-text-muted, #888);
+}
+/* ═══════════════════════════════════════════════
+   PLAYER ALATTI INFÓKÁRTYA
+   ═══════════════════════════════════════════════ */
+
+/* Kártya alap: csak egy kis margó, a többit a globális .detail-card viszi */
+.player-layout .detail-card {
+  margin-top: 16px;
+}
+.player-layout .detail-card[data-vod-id],
+.player-layout .detail-card[data-series-id] {
+  background:
+    radial-gradient(
+      circle at 15% 30%,
+      rgba(31, 214, 232, 0.07),
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 85% 15%,
+      rgba(246, 200, 0, 0.07),
+      transparent 20%
+    ),
+    radial-gradient(
+      circle at 70% 80%,
+      rgba(31, 214, 232, 0.05),
+      transparent 20%
+    ),
+    linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.45)),
+    radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size:
+    auto,
+    auto,
+    auto,
+    auto,
+    14px 14px;
+  background-color: var(--bg);
+  border-radius: var(--radius-lg, 10px);
+}
+/* Fent a nagy cím (csatorna / film / sorozat neve) */
+.player-layout .detail-card h4 {
+  margin-bottom: 30px;
+  font-size: 30px;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+}
+
+/* LIVE: két oszlop – bal meta, jobb EPG */
+.player-layout .detail-card[data-live-stream-id] {
+  background:
+    radial-gradient(
+      circle at 15% 30%,
+      rgba(31, 214, 232, 0.07),
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 85% 15%,
+      rgba(246, 200, 0, 0.07),
+      transparent 20%
+    ),
+    radial-gradient(
+      circle at 70% 80%,
+      rgba(31, 214, 232, 0.05),
+      transparent 20%
+    ),
+    linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.45)),
+    radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size:
+    auto,
+    auto,
+    auto,
+    auto,
+    14px 14px;
+  background-color: var(--bg);
+  border-radius: var(--radius-lg, 10px);
+}
+/* Bal wrapper: logo + meta függőlegesen */
+.player-layout .detail-card[data-live-stream-id] .live-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.player-layout .detail-card[data-live-stream-id] .detail-meta dt {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.player-layout .detail-card[data-live-stream-id] .detail-meta dd {
+  color: rgba(255, 255, 255, 0.9);
+}
+.player-layout .detail-card[data-live-stream-id] .detail-meta dl {
+  grid-template-columns: 1fr;
+}
+
+/* EPG szövegek */
+.player-layout .detail-card[data-live-stream-id] .live-detail-epg {
+  border-left: 1px solid rgba(255, 255, 255, 0.12); /* sötét háttéren lágyabb elválasztó */
+  color: #fff;
+  background-color: #111;
+}
+.player-layout .detail-card[data-live-stream-id] .detail-card-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.5fr);
+  gap: 16px;
+  align-items: flex-start;
+}
+
+/* Live meta (bal oszlop) – balra igazítva */
+.player-layout .detail-card[data-live-stream-id] .detail-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 10px;
+}
+.player-layout .detail-card[data-live-stream-id] .player-detail-logo {
+  width: 200px;
+  aspect-ratio: 16 / 9;
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid #000;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 3px 3px 0 #000;
+  margin-bottom: 10px; /* elválasztja a meta dl-től */
+}
+
+.player-layout .detail-card[data-live-stream-id] .player-detail-logo img {
+  max-width: 80%;
+  max-height: 70%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.7));
+}
+
+/* Live: jobb oldali EPG blokk */
+.player-layout .detail-card[data-live-stream-id] .live-detail-epg {
+  border-left: 1px solid var(--color-border);
+  padding-left: 14px;
+  font-size: var(--text-sm);
+}
+
+.player-layout .detail-card[data-live-stream-id] .live-detail-epg .muted,
+.player-layout .detail-card[data-live-stream-id] .live-detail-epg .epg-loading {
+  margin-top: 4px;
+}
+
+/* FILM + SOROZAT: egyoszlopos, középre húzott meta blokk */
+.player-layout .detail-card[data-vod-id] .detail-card-inner,
+.player-layout .detail-card[data-series-id] .detail-card-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* vízszintes közép */
+  gap: 12px;
+}
+
+/* Bal oszlop meta + opcionális logo – VOD/Sorozat esetén */
+.player-layout .detail-card[data-vod-id] .detail-meta,
+.player-layout .detail-card[data-series-id] .detail-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+}
+
+/* Logo méretezése, ha van detail-logo-wrap */
+.player-layout .detail-card[data-vod-id] .detail-logo-wrap,
+.player-layout .detail-card[data-series-id] .detail-logo-wrap {
+  width: 140px;
+  max-width: 100%;
+}
+
+.player-layout .detail-card[data-vod-id] .detail-logo-wrap img,
+.player-layout .detail-card[data-series-id] .detail-logo-wrap img {
+  display: block;
+  width: 100%;
+  max-height: 90px;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+/* Playeres meta dl-ek – hogy ne üssék a globális .detail-card dl-t */
+.player-layout .detail-meta dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 10px;
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.player-layout .detail-meta dt {
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.player-layout .detail-meta dd {
+  margin: 0;
+}
+
+/* Mobilon LIVE esetén a két oszlop essen egymás alá */
+@media (max-width: 768px) {
+  .player-layout .detail-card[data-live-stream-id] .detail-card-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .player-layout .detail-card[data-live-stream-id] .live-detail-epg {
+    border-left: none;
+    border-top: 1px solid var(--color-border);
+    padding-left: 0;
+    padding-top: 10px;
+    margin-top: 8px;
+  }
+}
+/* VOD + SOROZAT: bal oldalt poster + meta, jobb oldalt tartalom */
+
+.player-layout .detail-card[data-vod-id] .detail-card-inner.vod-layout,
+.player-layout .detail-card[data-series-id] .detail-card-inner.vod-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 2fr); /* bal blokk + jobb tartalom */
+  gap: 32px;
+  align-items: stretch;
+}
+
+/* Bal blokk: poster + meta egymás mellett */
+.player-layout .vod-left {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr); /* bal: poster, jobb: meta */
+  column-gap: 24px;
+  align-items: stretch;
+}
+
+/* Poster oszlop – közel teljes magasság, alul-felül 30px margin */
+.player-layout .vod-poster {
+  margin-block: 30px;
+  /* a grid miatt a cella magassága felveszi a teljes sor magasságát */
+}
+
+.player-layout .vod-poster img {
+  display: block;
+  height: 100%;
+  max-height: none;
+  width: auto;
+  max-width: 240px; /* hogy ne legyen túl széles */
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Meta oszlop a borító mellett */
+.player-layout .vod-meta {
+  display: block;
+  margin-block: 30px;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.9);
+  align-content: center; /* középre húzza a mezőket függőlegesen a bal oldali hasábban */
+}
+.player-layout .vod-meta > div {
+  display: block;
+  margin-bottom: 8px; /* sorok közötti távolság */
+}
+
+.player-layout .vod-meta dt {
+  display: block;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55); /* volt: var(--color-text-muted) */
+}
+
+.player-layout .vod-meta dd {
+  display: block;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Jobb hasáb: Rövid tartalom, elválasztóval */
+.player-layout .vod-plot {
+  border-left: 1px solid var(--color-border);
+  padding-left: 24px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.75);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.player-layout .vod-plot h5 {
+  margin: 0 0 8px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+}
+.player-layout .vod-plot p {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* Alul a kedvencek gomb */
+.player-layout .detail-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-start; /* vagy center, ha középen szeretnéd */
+}
+
+/* Mobilon egymás alá törjük */
+@media (max-width: 768px) {
+  .player-layout .detail-card[data-vod-id] .detail-card-inner.vod-layout,
+  .player-layout .detail-card[data-series-id] .detail-card-inner.vod-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .player-layout .vod-plot {
+    border-left: none;
+    border-top: 1px solid var(--color-border);
+    padding-left: 0;
+    padding-top: 12px;
+    margin-top: 8px;
+  }
+
+  .player-layout .vod-left {
+    grid-template-columns: auto 1fr;
+  }
 }
