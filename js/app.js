@@ -5,7 +5,7 @@
 import { getRoute, go }                            from './core/router.js';
 import { renderSidebar }                           from './components/sidebar.js';
 import { renderTopbar }                            from './components/topbar.js';
-import { getUser }                                 from './store/selectors.js';
+import { getUser, getWatchHistory }               from './store/selectors.js';
 import { setCurrentPlayerItem, setView, setUser, addToHistory, toggleFavorite, isFavorite } from './store/actions.js';
 import { renderHomeView, renderHomeLoadingView, bindLiveNowEpg } from './views/home.js';
 import { renderLiveView, renderLiveLoadingView, getAllLiveChannels, renderChannelPage } from './views/live.js';
@@ -258,12 +258,32 @@ async function mountPlayer(key) {
   const buttons     = [...document.querySelectorAll('.control-btn')];
   if (!video) return;
 
+  const history     = typeof getWatchHistory === 'function' ? getWatchHistory() : [];
+  const historyItem = history.find(h => h.key === key);
+  let resumeFrom    = 0;
+  let lastSavedProgress = 0;
+
   status.innerHTML = '<strong>Betöltés...</strong> Stream inicializálása.';
   playerService.init(video);
 
   try {
     const session = await createPlaybackSession(key);
+
+    if (!session.isLive && historyItem &&
+        Number.isFinite(historyItem.position) &&
+        Number.isFinite(historyItem.duration) &&
+        historyItem.duration > 0 &&
+        historyItem.position > 5 &&
+        historyItem.position < historyItem.duration - 5) {
+      resumeFrom = historyItem.position;
+    }
+
     await playerService.load(session);
+
+    if (resumeFrom > 0) {
+      playerService.seek(resumeFrom);
+    }
+
     status.innerHTML = '<strong>Lejátszás kész.</strong> A stream sikeresen elindult.';
 
     const playlist = getImportedPlaylist();
@@ -282,8 +302,28 @@ async function mountPlayer(key) {
       streamUrl: session.streamUrl || ''
     });
 
-    playerService.onProgress(({ ratio }) => {
-      if (progressBar) progressBar.style.width = `${Math.max(0, Math.min(100, ratio))}%`;
+    playerService.onProgress(({ current, duration, ratio }) => {
+      if (progressBar) {
+        const clamped = Math.max(0, Math.min(100, ratio));
+        progressBar.style.width = `${clamped}%`;
+      }
+
+      if (!session.isLive && duration && Number.isFinite(duration)) {
+        const delta = Math.abs(current - lastSavedProgress);
+        if (current >= 5 && delta >= 15) {
+          lastSavedProgress = current;
+          addToHistory({
+            key,
+            title: histMeta?.title || session.title || key,
+            type: histMeta?.type || (session.isLive ? 'live' : 'movie'),
+            group: histMeta?.group || '',
+            logo: histMeta?.logo || '',
+            streamUrl: session.streamUrl || '',
+            position: current,
+            duration
+          });
+        }
+      }
     });
   } catch (error) {
     status.classList.add('error');
@@ -787,7 +827,7 @@ function renderSeriesListHTML(items) {
       </article>`;
     }).join('')
   }${hasMore
-    ? `<button class="btn btn-secondary load-more-series-btn" data-series-offset="${PAGE}" style="grid-column:1/-1;margin-top:8px">⬇ Következő ${Math.min(rem,PAGE)} sorozat (${PAGE}/${items.length})</button>`
+    ? `<button class="btn btn-secondary load-more-series-btn" data-series-offset="${PAGE}" style="grid-column:1/-1;margin-top:8px">⬇ Következő ${Math.min(rem,PAGE)} sorozat (${PAGE}/${source.length})</button>`
     : `<div class="muted" style="grid-column:1/-1;padding:12px 0;font-size:.85rem;text-align:center">Összes sorozat megjelenítve (${items.length} db)</div>`
   }</div>`;
 }
@@ -858,7 +898,7 @@ function bindMoviesLoadMore() {
     }).join(''));
     btn.remove();
     if (hasMore) {
-      listEl.insertAdjacentHTML('beforeend', `<button class="btn btn-secondary load-more-movies-btn" data-movies-offset="${offset+PAGE}" style="grid-column:1/-1;margin-top:8px">⬇ Következő ${Math.min(rem,PAGE)} film (${offset+PAGE}/${items.length})</button>`);
+      listEl.insertAdjacentHTML('beforeend', `<button class="btn btn-secondary load-more-movies-btn" data-movies-offset="${offset+PAGE}" style="grid-column:1/-1;margin-top:8px">⬇ Következő ${Math.min(rem,PAGE)} film (${offset+PAGE}/${source.length})</button>`);
     } else {
       listEl.insertAdjacentHTML('beforeend', `<div class="muted" style="grid-column:1/-1;padding:12px 0;font-size:.85rem;text-align:center">Összes film megjelenítve (${source.length} db)</div>`);
     }

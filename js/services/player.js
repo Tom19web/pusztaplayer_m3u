@@ -82,6 +82,19 @@ export const playerService = {
     if (currentVideo) currentVideo.volume = Math.min(1, Math.max(0, value));
   },
 
+  /**
+   * Seek a VOD / sorozat tartalomban adott másodpercre.
+   * Live streameknél a backend úgyis ignorálja / felülírja az offsetet,
+   * ezért ott nincs külön logika.
+   */
+  seek(seconds) {
+    if (!currentVideo) return;
+    if (!Number.isFinite(seconds) || seconds < 0) return;
+    try {
+      currentVideo.currentTime = seconds;
+    } catch (_) {}
+  },
+
   onProgress(cb) {
     if (!currentVideo) return;
     if (progressTimer) clearInterval(progressTimer);
