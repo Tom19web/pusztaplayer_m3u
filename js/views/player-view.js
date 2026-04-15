@@ -118,8 +118,9 @@ export async function renderPlayerView(currentKey = 'royal') {
 
   const nextEpisodePanel = buildNextEpisodePanel(xtream);
 
-  const vodId    = !isLive && xtream?.type === 'movie'  ? (xtream.streamId || '')   : '';
-  const seriesId = !isLive && xtream?.type === 'series' ? (xtream.seriesId || '') : '';
+  const vodId       = !isLive && xtream?.type === 'movie'  ? (xtream.streamId || '')   : '';
+  const seriesId    = !isLive && xtream?.type === 'series' ? (xtream.seriesId || '')   : '';
+  const liveStreamId = isLive ? (xtream?.streamId || '') : '';
 
   return `
     <section class="player-layout">
@@ -145,19 +146,38 @@ export async function renderPlayerView(currentKey = 'royal') {
         </div>`
       }
 
-      <div class="detail-card"${vodId ? ` data-vod-id="${vodId}"` : ''}${seriesId ? ` data-series-id="${seriesId}"` : ''}>
+      <div class="detail-card"${vodId ? ` data-vod-id="${vodId}"` : ''}${seriesId ? ` data-series-id="${seriesId}"` : ''}${liveStreamId ? ` data-live-stream-id="${liveStreamId}"` : ''}>
         <h4>${title}</h4>
-        <dl>
-          <div><dt>Típus</dt><dd>${type}</dd></div>
-          <div><dt>Kategória</dt><dd>${group}</dd></div>
-          ${!isLive && (xtream?.type === 'movie' || xtream?.type === 'series') ? `
-            <div><dt>Kiadás dátuma</dt><dd id="player-detail-release">–</dd></div>
-            <div><dt>Főszereplők</dt><dd id="player-detail-cast">–</dd></div>
-            <div><dt>Rendező</dt><dd id="player-detail-director">–</dd></div>
+        <div class="detail-card-inner">
+          <div class="detail-meta">
+            <dl>
+              <div><dt>Típus</dt><dd>${type}</dd></div>
+              <div><dt>Kategória</dt><dd>${group}</dd></div>
+              ${!isLive && (xtream?.type === 'movie' || xtream?.type === 'series') ? `
+                <div><dt>Kiadás dátuma</dt><dd id="player-detail-release">–</dd></div>
+                <div><dt>Főszereplők</dt><dd id="player-detail-cast">–</dd></div>
+                <div><dt>Rendező</dt><dd id="player-detail-director">–</dd></div>
+              ` : ''}
+            </dl>
+            <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              ${favBtn}
+            </div>
+          </div>
+
+          ${isLive ? `
+          <div class="player-live-epg">
+            <div class="epg-row">
+              <span class="epg-label">Most megy</span>
+              <span class="epg-title" id="player-epg-now-title">–</span>
+              <span class="epg-time" id="player-epg-now-time">–</span>
+            </div>
+            <div class="epg-row">
+              <span class="epg-label">Következik</span>
+              <span class="epg-title" id="player-epg-next-title">–</span>
+              <span class="epg-time" id="player-epg-next-time">–</span>
+            </div>
+          </div>
           ` : ''}
-        </dl>
-        <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          ${favBtn}
         </div>
       </div>
 
