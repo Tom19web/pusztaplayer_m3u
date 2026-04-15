@@ -97,6 +97,7 @@ async function renderApp() {
   bindFavoriteButtons();   // szívgombok minden nézetben
   bindFavMovieCards();     // kedvencek: film-kártya kattintás
   bindFavSeriesCards();    // kedvencek: sorozat-kártya kattintás
+  bindPlayerVodMeta();     // player alatt VOD meta a get_vod_info-ból
   applySearch(searchTerm);
 
   if (currentView === 'player') await mountPlayer(playerKey);
@@ -114,7 +115,7 @@ export function renderHeartBtn(key) {
     class="fav-heart${active ? ' fav-heart--active' : ''}"
     data-fav-toggle="${key}"
     title="${active ? 'Eltávolítás a kedvencekből' : 'Hozzáadás a kedvencekhez'}"
-    aria-label="${active ? 'Eltávolítás' : 'Hozzáadás'}"
+    aria-label="${active ? 'Eltávolítás a kedvencekből' : 'Hozzáadás a kedvencekhez'}"
     aria-pressed="${active}">${active ? '♥' : '♡'}</button>`;
 }
 
@@ -182,7 +183,7 @@ function bindFavoriteButtons() {
       btn.textContent         = added ? '♥' : '♡';
       btn.title               = added ? 'Eltávolítás a kedvencekből' : 'Hozzáadás a kedvencekhez';
       btn.setAttribute('aria-pressed', String(added));
-      btn.setAttribute('aria-label',   added ? 'Eltávolítás' : 'Hozzáadás');
+      btn.setAttribute('aria-label',   added ? 'Eltávolítás a kedvencekből' : 'Hozzáadás a kedvencekhez');
 
       if (!added) {
         const favCard = btn.closest('.fav-card');
@@ -750,7 +751,7 @@ function renderMovieListHTML(items) {
         <div class="thumb" style="${bg}">${!item.logo?`<span>${item.title.replace(/ /g,'<br>')}</span>`:''}
           <button class="fav-heart${fav?' fav-heart--active':''}" data-fav-toggle="${item.key}"
             title="${fav?'Eltávolítás a kedvencekből':'Hozzáadás a kedvencekhez'}"
-            aria-label="${fav?'Eltávolítás':'Hozzáadás'}" aria-pressed="${fav}">${fav?'♥':'♡'}</button>
+            aria-label="${fav?'Eltávolítás a kedvencekből':'Hozzáadás a kedvencekhez'}" aria-pressed="${fav}">${fav?'♥':'♡'}</button>
         </div>
         <div class="meta"><strong>${item.title}</strong><small>${item.group||''}</small></div>
       </article>`;
@@ -780,7 +781,7 @@ function renderSeriesListHTML(items) {
         <div class="thumb" style="${bg}">${!item.logo?`<span>${item.title.replace(/ /g,'<br>')}</span>`:''}
           <button class="fav-heart${fav?' fav-heart--active':''}" data-fav-toggle="${item.key}"
             title="${fav?'Eltávolítás a kedvencekből':'Hozzáadás a kedvencekhez'}"
-            aria-label="${fav?'Eltávolítás':'Hozzáadás'}" aria-pressed="${fav}">${fav?'♥':'♡'}</button>
+            aria-label="${fav?'Eltávolítás a kedvencekből':'Hozzáadás a kedvencekhez'}" aria-pressed="${fav}">${fav?'♥':'♡'}</button>
         </div>
         <div class="meta"><strong>${item.title}</strong><small>${item.group||''}</small></div>
       </article>`;
@@ -850,7 +851,7 @@ function bindMoviesLoadMore() {
       return `<article class="card" data-movie-key="${c.key}" data-movie-stream-id="${c.streamId||''}" data-movie-title="${c.title.replace(/"/g,'&quot;')}" data-movie-group="${(c.group||'').replace(/"/g,'&quot;')}" data-movie-logo="${(c.logo||'').replace(/"/g,'&quot;')}">
         <div class="thumb" style="${bg}">${!c.logo?`<span>${c.title.replace(/ /g,'<br>')}</span>`:''}
           <button class="fav-heart${fav?' fav-heart--active':''}" data-fav-toggle="${c.key}"
-            title="${fav?'Eltávolítás':'Hozzáadás'}" aria-label="${fav?'Eltávolítás':'Hozzáadás'}" aria-pressed="${fav}">${fav?'♥':'♡'}</button>
+            title="${fav?'Eltávolítás a kedvencekből':'Hozzáadás a kedvencekhez'}" aria-label="${fav?'Eltávolítás a kedvencekből':'Hozzáadás a kedvencekhez'}" aria-pressed="${fav}">${fav?'♥':'♡'}</button>
         </div>
         <div class="meta"><strong>${c.title}</strong><small>${c.group||''}</small></div>
       </article>`;
@@ -886,7 +887,7 @@ function bindSeriesLoadMore() {
       return `<article class="card" data-open-series="${c.seriesId}" data-series-key="${c.key}" data-series-title="${c.title.replace(/"/g,'&quot;')}" data-series-group="${(c.group||'').replace(/"/g,'&quot;')}" data-series-logo="${(c.logo||'').replace(/"/g,'&quot;')}" style="cursor:pointer">
         <div class="thumb" style="${bg}">${!c.logo?`<span>${c.title.replace(/ /g,'<br>')}</span>`:''}
           <button class="fav-heart${fav?' fav-heart--active':''}" data-fav-toggle="${c.key}"
-            title="${fav?'Eltávolítás':'Hozzáadás'}" aria-label="${fav?'Eltávolítás':'Hozzáadás'}" aria-pressed="${fav}">${fav?'♥':'♡'}</button>
+            title="${fav?'Eltávolítás a kedvencekből':'Hozzáadás a kedvencekhez'}" aria-label="${fav?'Eltávolítás a kedvencekből':'Hozzáadás a kedvencekhez'}" aria-pressed="${fav}">${fav?'♥':'♡'}</button>
         </div>
         <div class="meta"><strong>${c.title}</strong><small>${c.group||''}</small></div>
       </article>`;
@@ -1026,6 +1027,50 @@ function bindNextEpisode() {
       setCurrentPlayerItem(key); navigateTo('player', { id: key });
     });
   });
+}
+
+/* ── Player nézet VOD metaadat (get_vod_info) ── */
+function bindPlayerVodMeta() {
+  const card = document.querySelector('.player-layout .detail-card[data-vod-id]');
+  if (!card) return;
+
+  const vodId = card.dataset.vodId;
+  if (!vodId) return;
+
+  const releaseEl  = card.querySelector('#player-detail-release');
+  const castEl     = card.querySelector('#player-detail-cast');
+  const directorEl = card.querySelector('#player-detail-director');
+
+  if (!releaseEl || !castEl || !directorEl) return;
+
+  const creds = loadXtreamCredentials();
+  if (!creds) {
+    releaseEl.textContent  = '–';
+    castEl.textContent     = '–';
+    directorEl.textContent = '–';
+    return;
+  }
+
+  releaseEl.textContent  = 'Betöltés…';
+  castEl.textContent     = '';
+  directorEl.textContent = '';
+
+  xtreamGetVodInfo(creds.username, creds.password, vodId)
+    .then(data => {
+      const info = data && data.info ? data.info : {};
+      const release  = info.releasedate || info.year || '';
+      const cast     = info.cast || info.actors || '';
+      const director = info.director || '';
+
+      releaseEl.textContent  = release  || 'Ismeretlen';
+      castEl.textContent     = cast     || 'Nincs adat';
+      directorEl.textContent = director || 'Nincs adat';
+    })
+    .catch(() => {
+      releaseEl.textContent  = 'Nincs adat';
+      castEl.textContent     = 'Nincs adat';
+      directorEl.textContent = 'Nincs adat';
+    });
 }
 
 function bindGlobalEvents() {

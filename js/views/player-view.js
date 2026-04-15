@@ -118,6 +118,8 @@ export async function renderPlayerView(currentKey = 'royal') {
 
   const nextEpisodePanel = buildNextEpisodePanel(xtream);
 
+  const vodId = !isLive && xtream?.type === 'movie' ? (xtream.streamId || '') : '';
+
   return `
     <section class="player-layout">
       <div id="player-status" class="status-banner">
@@ -142,13 +144,17 @@ export async function renderPlayerView(currentKey = 'royal') {
         </div>`
       }
 
-      <div class="detail-card">
+      <div class="detail-card"${vodId ? ` data-vod-id="${vodId}"` : ''}>
         <h4>${title}</h4>
         <dl>
           <div><dt>Típus</dt><dd>${type}</dd></div>
           <div><dt>Állapot</dt><dd>${status}</dd></div>
           <div><dt>Kategória</dt><dd>${group}</dd></div>
-          ${streamUrl ? `<div><dt>Stream URL</dt><dd style="word-break:break-all;font-size:.8rem">${streamUrl}</dd></div>` : ''}
+          ${!isLive && xtream?.type === 'movie' ? `
+            <div><dt>Kiadás dátuma</dt><dd id="player-detail-release">–</dd></div>
+            <div><dt>Főszereplők</dt><dd id="player-detail-cast">–</dd></div>
+            <div><dt>Rendező</dt><dd id="player-detail-director">–</dd></div>
+          ` : ''}
         </dl>
         <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
           ${favBtn}
