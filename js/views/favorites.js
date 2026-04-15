@@ -14,16 +14,13 @@ function heartBtn(key, active) {
 }
 
 function favChannelCard(item) {
-  const bg = item.logo
-    ? `background:url('${item.logo}') center/cover no-repeat #111`
-    : 'background:linear-gradient(145deg,#22c6d6,#1a1a1a)';
   return `
     <article class="card fav-card"
       data-fav-key="${item.key}"
       data-open-player="${item.key}"
       data-channel-key="${item.key}"
       tabindex="0">
-      <div class="thumb fav-thumb" style="aspect-ratio:16/9;${bg}">
+      <div class="thumb fav-thumb" style="aspect-ratio:16/9;background:linear-gradient(135deg,#1a1a1a 0%,#0d3b4a 60%,#1fd6e8 100%)">
         ${item.logo ? `<img src="${item.logo}" alt="" style="width:100%;height:100%;object-fit:contain;padding:10px" loading="lazy" onerror="this.style.display='none'">` : ''}
         ${heartBtn(item.key, true)}
       </div>

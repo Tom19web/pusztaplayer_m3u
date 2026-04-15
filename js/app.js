@@ -943,7 +943,90 @@ function bindSeriesLoadMore() {
     bindSeriesDetailPanel(); bindSeriesCards(); bindRouteEvents(); bindFavoriteButtons();
   });
 }
+/* ── Csoport szűrés (Live) ── */
+function bindGroupFilter() {
+  const groupButtons = [...document.querySelectorAll('[data-group-filter]')];
+  const listEl       = document.getElementById('live-channel-list');
+  if (!groupButtons.length || !listEl) return;
+  const masterChannels = getAllLiveChannels();
+  if (!masterChannels.length) return;
 
+  groupButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      groupButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const filter   = btn.dataset.groupFilter;
+      const filtered = filter === 'Összes csatórna'
+        ? masterChannels
+        : masterChannels.filter(ch => ch.group === filter);
+
+      listEl._filteredChannels = filtered;
+      listEl.innerHTML = renderChannelListHTML(filtered);
+
+      bindLiveInteractions();
+      bindRouteEvents();
+      bindFavoriteButtons();
+    });
+  });
+}
+
+/* ── Kategória szűrés (Filmek) ── */
+function bindMoviesFilter() {
+  const groupButtons = [...document.querySelectorAll('[data-movies-filter]')];
+  const listEl       = document.getElementById('vod-movies-list');
+  if (!groupButtons.length || !listEl) return;
+  const master = getAllMovies();
+  if (!master.length) return;
+
+  groupButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      groupButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const filter   = btn.dataset.moviesFilter;
+      const filtered = filter === 'Összes film'
+        ? master
+        : master.filter(m => m.group === filter);
+
+      listEl._filteredMovies = filtered;
+      listEl.innerHTML = renderMovieListHTML(filtered);
+
+      bindMovieCards();
+      bindRouteEvents();
+      bindFavoriteButtons();
+    });
+  });
+}
+
+/* ── Kategória szűrés (Sorozatok) ── */
+function bindSeriesFilter() {
+  const groupButtons = [...document.querySelectorAll('[data-series-filter]')];
+  const listEl       = document.getElementById('vod-series-list');
+  if (!groupButtons.length || !listEl) return;
+  const master = getAllSeries();
+  if (!master.length) return;
+
+  groupButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      groupButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const filter   = btn.dataset.seriesFilter;
+      const filtered = filter === 'Összes sorozat'
+        ? master
+        : master.filter(s => s.group === filter);
+
+      listEl._filteredSeries = filtered;
+      listEl.innerHTML = renderSeriesListHTML(filtered);
+
+      bindSeriesDetailPanel();
+      bindSeriesCards();
+      bindRouteEvents();
+      bindFavoriteButtons();
+    });
+  });
+}
 function bindRouteEvents() {
   document.querySelectorAll('[data-route]').forEach(btn => {
     btn.addEventListener('click', () => navigateTo(btn.dataset.route));
@@ -1020,23 +1103,32 @@ function bindPlayerVodMeta() {
   const seriesId = card.dataset.seriesId;
   if (!vodId && !seriesId) return;
 
-  const releaseEl  = card.querySelector('#player-detail-release');
-  const castEl     = card.querySelector('#player-detail-cast');
-  const directorEl = card.querySelector('#player-detail-director');
+  const releaseEl = card.querySelector('#player-detail-release');
+  const castEl    = card.querySelector('#player-detail-cast');
+  const genreEl   = card.querySelector('#player-detail-genre');
+  const plotEl    = card.querySelector('#player-detail-plot');
 
-  if (!releaseEl || !castEl || !directorEl) return;
+  // directorEl-t már nem használjuk a player kártyán
+  // const directorEl = card.querySelector('#player-detail-director');
+
+  // release + cast KÖTELEZŐ, a többi opcionális
+  if (!releaseEl || !castEl) return;
 
   const creds = loadXtreamCredentials();
   if (!creds) {
-    releaseEl.textContent  = '–';
-    castEl.textContent     = '–';
-    directorEl.textContent = '–';
+    // nincs Xtream login → inkább jelöljük “nincs adat”-nak
+    releaseEl.textContent = 'Ismeretlen';
+    castEl.textContent    = 'Nincs adat';
+    if (genreEl) genreEl.textContent = 'Nincs adat';
+    if (plotEl)  plotEl.textContent  = 'Nincs tartalom';
     return;
   }
 
-  releaseEl.textContent  = 'Betöltés…';
-  castEl.textContent     = '';
-  directorEl.textContent = '';
+  // indul a betöltés
+  releaseEl.textContent = 'Betöltés…';
+  castEl.textContent    = '';
+  if (genreEl) genreEl.textContent = '–';
+  if (plotEl)  plotEl.textContent  = '–';
 
   let loader;
 
@@ -1047,7 +1139,8 @@ function bindPlayerVodMeta() {
         return {
           release:  info.releasedate || info.year || '',
           cast:     info.cast || info.actors || '',
-          director: info.director || ''
+          genre:    info.genre || '',
+          plot:     info.plot || info.description || ''
         };
       });
   } else {
@@ -1057,24 +1150,33 @@ function bindPlayerVodMeta() {
         return {
           release:  info.releaseDate || info.year || '',
           cast:     info.cast || '',
-          director: info.director || ''
+          genre:    info.genre || '',
+          plot:     info.plot || ''
         };
       });
   }
 
   loader
     .then(meta => {
-      releaseEl.textContent  = meta.release  || 'Ismeretlen';
-      castEl.textContent     = meta.cast     || 'Nincs adat';
-      directorEl.textContent = meta.director || 'Nincs adat';
+      releaseEl.textContent = meta.release || 'Ismeretlen';
+      castEl.textContent    = meta.cast   || 'Nincs adat';
+      if (genreEl) genreEl.textContent = meta.genre || 'Nincs adat';
+      if (plotEl) {
+        if (meta.plot) {
+          const trimmed = meta.plot.slice(0, 260);
+          plotEl.textContent = trimmed + (meta.plot.length > 260 ? '…' : '');
+        } else {
+          plotEl.textContent = 'Nincs tartalom';
+        }
+      }
     })
     .catch(() => {
-      releaseEl.textContent  = 'Nincs adat';
-      castEl.textContent     = 'Nincs adat';
-      directorEl.textContent = 'Nincs adat';
+      releaseEl.textContent = 'Nincs adat';
+      castEl.textContent    = 'Nincs adat';
+      if (genreEl) genreEl.textContent = 'Nincs adat';
+      if (plotEl)  plotEl.textContent  = 'Nincs tartalom';
     });
 }
-
 /* ── Player nézet Live EPG (ugyanaz, mint a Live jobb sáv) ── */
 function bindPlayerLiveEpg() {
   const card = document.querySelector('.player-layout .detail-card[data-live-stream-id]');

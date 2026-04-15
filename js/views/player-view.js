@@ -148,28 +148,82 @@ export async function renderPlayerView(currentKey = 'royal') {
 
       <div class="detail-card"${vodId ? ` data-vod-id="${vodId}"` : ''}${seriesId ? ` data-series-id="${seriesId}"` : ''}${liveStreamId ? ` data-live-stream-id="${liveStreamId}"` : ''}>
         <h4>${title}</h4>
-        <div class="detail-card-inner">
-          <div class="detail-meta">
-            <dl>
-              <div><dt>Típus</dt><dd>${type}</dd></div>
-              <div><dt>Kategória</dt><dd>${group}</dd></div>
-              ${!isLive && (xtream?.type === 'movie' || xtream?.type === 'series') ? `
+
+        ${isLive ? `
+<!-- LIVE LAYOUT: bal meta + jobb EPG (marad ahogy volt) -->
+<div class="detail-card-inner">
+
+  <!-- Bal oszlop: logo + meta egybe -->
+  <div class="live-left">
+    ${xtream?.logo ? `
+      <div class="player-detail-logo">
+        <img
+          src="${xtream.logo}"
+          alt="${title}"
+          loading="lazy"
+          onerror="this.parentElement.style.display='none'"
+        >
+      </div>` : ''}
+
+    <div class="detail-meta">
+      <dl>
+        <div><dt>Típus</dt><dd>${type}</dd></div>
+        <div><dt>Kategória</dt><dd>${group}</dd></div>
+      </dl>
+      <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        ${favBtn}
+      </div>
+    </div>
+  </div>
+
+  <!-- Jobb oszlop: EPG -->
+  <div id="live-detail-epg" class="live-detail-epg"></div>
+</div>
+        ` : (xtream?.type === 'movie' || xtream?.type === 'series') ? `
+                   <!-- VOD / SOROZAT: bal poster + meta egymás mellett, jobb oldalt tartalom -->
+          <div class="detail-card-inner vod-layout">
+            <div class="vod-left">
+              <div class="vod-poster">
+                ${xtream?.logo ? `
+                  <img
+                    src="${xtream.logo}"
+                    alt="${title.replace(/"/g, '&quot;')}"
+                    loading="lazy"
+                    onerror="this.style.display='none'">
+                ` : ''}
+              </div>
+
+              <dl class="vod-meta">
                 <div><dt>Kiadás dátuma</dt><dd id="player-detail-release">–</dd></div>
+                <div><dt>Műfaj</dt><dd id="player-detail-genre">–</dd></div>
                 <div><dt>Főszereplők</dt><dd id="player-detail-cast">–</dd></div>
                 <div><dt>Rendező</dt><dd id="player-detail-director">–</dd></div>
-              ` : ''}
-            </dl>
-            <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-              ${favBtn}
+              </dl>
+            </div>
+
+            <div class="vod-plot">
+              <h5>Rövid tartalom</h5>
+              <p id="player-detail-plot">–</p>
             </div>
           </div>
 
-          ${isLive ? `
-          <div id="live-detail-epg" class="live-detail-epg"></div>
-          ` : ''}
-        </div>
-      </div>
-
+          <div class="detail-actions">
+            ${favBtn}
+          </div>
+        ` : `
+          <!-- fallback -->
+          <div class="detail-card-inner">
+            <div class="detail-meta">
+              <dl>
+                <div><dt>Típus</dt><dd>${type}</dd></div>
+                <div><dt>Kategória</dt><dd>${group}</dd></div>
+              </dl>
+              <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                ${favBtn}
+              </div>
+            </div>
+          </div>
+        `}
       ${nextEpisodePanel}
     </section>
   `;
