@@ -118,8 +118,8 @@ export async function renderPlayerView(currentKey = 'royal') {
 
   const nextEpisodePanel = buildNextEpisodePanel(xtream);
 
-  const vodId       = !isLive && xtream?.type === 'movie'  ? (xtream.streamId || '')   : '';
-  const seriesId    = !isLive && xtream?.type === 'series' ? (xtream.seriesId || '')   : '';
+  const vodId        = !isLive && xtream?.type === 'movie'  ? (xtream.streamId || '')   : '';
+  const seriesId     = !isLive && xtream?.type === 'series' ? (xtream.seriesId || '')   : '';
   const liveStreamId = isLive ? (xtream?.streamId || '') : '';
 
   return `
@@ -165,18 +165,7 @@ export async function renderPlayerView(currentKey = 'royal') {
           </div>
 
           ${isLive ? `
-          <div class="player-live-epg">
-            <div class="epg-row">
-              <span class="epg-label">Most megy</span>
-              <span class="epg-title" id="player-epg-now-title">–</span>
-              <span class="epg-time" id="player-epg-now-time">–</span>
-            </div>
-            <div class="epg-row">
-              <span class="epg-label">Következik</span>
-              <span class="epg-title" id="player-epg-next-title">–</span>
-              <span class="epg-time" id="player-epg-next-time">–</span>
-            </div>
-          </div>
+          <div id="live-detail-epg" class="live-detail-epg"></div>
           ` : ''}
         </div>
       </div>

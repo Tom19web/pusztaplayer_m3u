@@ -5,7 +5,7 @@
 import { getRoute, go }                            from './core/router.js';
 import { renderSidebar }                           from './components/sidebar.js';
 import { renderTopbar }                            from './components/topbar.js';
-import { getUser, getWatchHistory }               from './store/selectors.js';
+import { getUser, getWatchHistory }                from './store/selectors.js';
 import { setCurrentPlayerItem, setView, setUser, addToHistory, toggleFavorite, isFavorite } from './store/actions.js';
 import { renderHomeView, renderHomeLoadingView, bindLiveNowEpg } from './views/home.js';
 import { renderLiveView, renderLiveLoadingView, getAllLiveChannels, renderChannelPage } from './views/live.js';
@@ -98,7 +98,7 @@ async function renderApp() {
   bindFavMovieCards();     // kedvencek: film-kártya kattintás
   bindFavSeriesCards();    // kedvencek: sorozat-kártya kattintás
   bindPlayerVodMeta();     // player alatt VOD/sorozat meta Xtream infóból
-  bindPlayerLiveEpg();     // ÚJ: Live TV EPG „Most / Következik”
+  bindPlayerLiveEpg();     // player alatt Live EPG a Live jobb panel logikájával
   applySearch(searchTerm);
 
   if (currentView === 'player') await mountPlayer(playerKey);
@@ -928,7 +928,8 @@ function bindSeriesLoadMore() {
       return `<article class="card" data-open-series="${c.seriesId}" data-series-key="${c.key}" data-series-title="${c.title.replace(/"/g,'&quot;')}" data-series-group="${(c.group||'').replace(/"/g,'&quot;')}" data-series-logo="${(c.logo||'').replace(/"/g,'&quot;')}" style="cursor:pointer">
         <div class="thumb" style="${bg}">${!c.logo?`<span>${c.title.replace(/ /g,'<br>')}</span>`:''}
           <button class="fav-heart${fav?' fav-heart--active':''}" data-fav-toggle="${c.key}"
-            title="${fav?'Eltávolítás a kedvencekből':'Hozzáadás a kedvencekhez'}" aria-label="${fav?'Eltávolítás a kedvencekből':'Hozzáadás a kedvencekhez'}" aria-pressed="${fav}">${fav?'♥':'♡'}</button>
+            title="${fav?'Eltávolítás a kedvencekből':'Hozzáadás a kedvencekhez'}"
+            aria-label="${fav?'Eltávolítás a kedvencekből':'Hozzáadás a kedvencekhez'}" aria-pressed="${fav}">${fav?'♥':'♡'}</button>
         </div>
         <div class="meta"><strong>${c.title}</strong><small>${c.group||''}</small></div>
       </article>`;
@@ -937,69 +938,9 @@ function bindSeriesLoadMore() {
     if (hasMore) {
       listEl.insertAdjacentHTML('beforeend', `<button class="btn btn-secondary load-more-series-btn" data-series-offset="${offset+PAGE}" style="grid-column:1/-1;margin-top:8px">⬇ Következő ${Math.min(rem,PAGE)} sorozat (${offset+PAGE}/${source.length})</button>`);
     } else {
-      listEl.insertAdjacentHTML('beforeend', `<div class="muted" style="grid-column:1/-1;padding:12px 0;font-size:.85rem;text-align:center">Összes sorozat megjelenítve (${source.length} db)</div>`);
+      listEl.insertAdjacentHTML('beforeend', `<div class="muted" style="grid-column:1/-1;padding:12px 0;font-size:.85rem;text-align:center">Összes sorozat megjelenítve (${items.length} db)</div>`);
     }
     bindSeriesDetailPanel(); bindSeriesCards(); bindRouteEvents(); bindFavoriteButtons();
-  });
-}
-
-/* ── Csoport szűrés (Live) ── */
-function bindGroupFilter() {
-  const groupButtons = [...document.querySelectorAll('[data-group-filter]')];
-  const listEl       = document.getElementById('live-channel-list');
-  if (!groupButtons.length || !listEl) return;
-  const masterChannels = getAllLiveChannels();
-  if (!masterChannels.length) return;
-  groupButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      groupButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const filter   = btn.dataset.groupFilter;
-      const filtered = filter === 'Összes csatórna' ? masterChannels : masterChannels.filter(ch => ch.group === filter);
-      listEl._filteredChannels = filtered;
-      listEl.innerHTML = renderChannelListHTML(filtered);
-      bindLiveInteractions(); bindRouteEvents(); bindFavoriteButtons();
-    });
-  });
-}
-
-/* ── Kategória szűrés (Filmek) ── */
-function bindMoviesFilter() {
-  const groupButtons = [...document.querySelectorAll('[data-movies-filter]')];
-  const listEl       = document.getElementById('vod-movies-list');
-  if (!groupButtons.length || !listEl) return;
-  const master = getAllMovies();
-  if (!master.length) return;
-  groupButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      groupButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const filter   = btn.dataset.moviesFilter;
-      const filtered = filter === 'Összes film' ? master : master.filter(m => m.group === filter);
-      listEl._filteredMovies = filtered;
-      listEl.innerHTML = renderMovieListHTML(filtered);
-      bindMovieCards(); bindRouteEvents(); bindFavoriteButtons();
-    });
-  });
-}
-
-/* ── Kategória szűrés (Sorozatok) ── */
-function bindSeriesFilter() {
-  const groupButtons = [...document.querySelectorAll('[data-series-filter]')];
-  const listEl       = document.getElementById('vod-series-list');
-  if (!groupButtons.length || !listEl) return;
-  const master = getAllSeries();
-  if (!master.length) return;
-  groupButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      groupButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const filter   = btn.dataset.seriesFilter;
-      const filtered = filter === 'Összes sorozat' ? master : master.filter(s => s.group === filter);
-      listEl._filteredSeries = filtered;
-      listEl.innerHTML = renderSeriesListHTML(filtered);
-      bindSeriesDetailPanel(); bindSeriesCards(); bindRouteEvents(); bindFavoriteButtons();
-    });
   });
 }
 
@@ -1134,6 +1075,17 @@ function bindPlayerVodMeta() {
     });
 }
 
+/* ── Player nézet Live EPG (ugyanaz, mint a Live jobb sáv) ── */
+function bindPlayerLiveEpg() {
+  const card = document.querySelector('.player-layout .detail-card[data-live-stream-id]');
+  if (!card) return;
+
+  const streamId = card.dataset.liveStreamId;
+  if (!streamId) return;
+
+  loadEpgIntoPanel(streamId);
+}
+
 function bindGlobalEvents() {
   const input = document.getElementById('global-search');
   if (!input) return;
@@ -1153,64 +1105,6 @@ function applySearch(term) {
     if (show) visible++;
   });
   if (empty) empty.classList.toggle('hidden', visible !== 0);
-}
-/* ── Player nézet Live EPG (Most / Következik) ── */
-function bindPlayerLiveEpg() {
-  const card = document.querySelector('.player-layout .detail-card[data-live-stream-id]');
-  if (!card) return;
-
-  const streamId = card.dataset.liveStreamId;
-  const nowTitleEl  = card.querySelector('#player-epg-now-title');
-  const nowTimeEl   = card.querySelector('#player-epg-now-time');
-  const nextTitleEl = card.querySelector('#player-epg-next-title');
-  const nextTimeEl  = card.querySelector('#player-epg-next-time');
-
-  if (!streamId || !nowTitleEl || !nowTimeEl || !nextTitleEl || !nextTimeEl) return;
-
-  const creds = loadXtreamCredentials();
-  if (!creds) {
-    nowTitleEl.textContent  = 'EPG nem elérhető';
-    nowTimeEl.textContent   = 'Xtream bejelentkezés kell';
-    nextTitleEl.textContent = '';
-    nextTimeEl.textContent  = '';
-    return;
-  }
-
-  nowTitleEl.textContent  = 'Betöltés…';
-  nowTimeEl.textContent   = '';
-  nextTitleEl.textContent = '';
-  nextTimeEl.textContent  = '';
-
-  fetchShortEpg(creds, streamId, 3)
-    .then(rows => {
-      if (!rows.length) {
-        nowTitleEl.textContent  = 'Nincs EPG adat';
-        nowTimeEl.textContent   = '';
-        nextTitleEl.textContent = '';
-        nextTimeEl.textContent  = '';
-        return;
-      }
-
-      const now  = rows[0];
-      const next = rows[1];
-
-      nowTitleEl.textContent = now.title || 'Ismeretlen műsor';
-      nowTimeEl.textContent  = now.time + (now.endTime ? ` – ${now.endTime}` : '');
-
-      if (next) {
-        nextTitleEl.textContent = next.title || '—';
-        nextTimeEl.textContent  = next.time + (next.endTime ? ` – ${next.endTime}` : '');
-      } else {
-        nextTitleEl.textContent = 'Nincs következő adat';
-        nextTimeEl.textContent  = '';
-      }
-    })
-    .catch(() => {
-      nowTitleEl.textContent  = 'EPG hiba';
-      nowTimeEl.textContent   = '';
-      nextTitleEl.textContent = '';
-      nextTimeEl.textContent  = '';
-    });
 }
 
 window.addEventListener('hashchange', () => { playerService.destroy(); renderApp(); });
