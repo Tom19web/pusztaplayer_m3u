@@ -1,0 +1,162 @@
+.view-title{margin:0 0 6px}.muted{color:var(--muted)}.detail-card dl{margin:0;display:grid;gap:10px}.detail-card dt{font-weight:800}.detail-card dd{margin:4px 0 0;color:#333}
+
+/* ═══════════════════════════════════════════════
+   FAV-HEART — szívgomb (minden kártyán)
+   ═══════════════════════════════════════════════ */
+.fav-heart {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 10;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(4px);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  color: #fff;
+  opacity: 0;
+  transform: scale(.8);
+  transition: opacity .18s, transform .18s, background .18s, color .18s;
+  line-height: 1;
+  padding: 0;
+}
+.card:hover .fav-heart,
+.fav-card .fav-heart,
+.channel-item:hover .fav-heart {
+  opacity: 1;
+  transform: scale(1);
+}
+.fav-heart--active {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+  color: #e63950;
+  background: rgba(0,0,0,.65);
+}
+.fav-heart:hover {
+  background: rgba(230,57,80,.85);
+  color: #fff;
+  transform: scale(1.15) !important;
+}
+.fav-heart--active:hover {
+  background: rgba(0,0,0,.75);
+  color: #aaa;
+}
+
+/* ── channel-item: szívgomb pozícionáláshoz ── */
+.channel-item {
+  position: relative;
+  overflow: visible;
+}
+
+/* ═══════════════════════════════════════════════
+   FAV-PLAYER-BTN — Lejátszó nézetbeli kedvenc gomb
+   ═══════════════════════════════════════════════ */
+.fav-player-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1.5px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.06);
+  color: var(--color-text-muted, #aaa);
+  font-size: .88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .18s, border-color .18s, color .18s, transform .15s;
+}
+.fav-player-btn:hover {
+  background: rgba(230,57,80,.15);
+  border-color: #e63950;
+  color: #e63950;
+  transform: scale(1.03);
+}
+.fav-player-btn--active {
+  background: rgba(230,57,80,.18);
+  border-color: #e63950;
+  color: #e63950;
+}
+.fav-player-btn--active:hover {
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.18);
+  color: var(--color-text-muted, #aaa);
+}
+
+/* ═══════════════════════════════════════════════
+   FAVORITES VIEW
+   ═══════════════════════════════════════════════ */
+.fav-section {
+  margin-bottom: 36px;
+}
+.fav-section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border, rgba(255,255,255,.08));
+}
+.fav-section-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+.fav-section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0;
+  flex: 1;
+}
+
+/* Live kedvencek – kisebb csatorna-rács */
+.fav-live-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+.fav-card {
+  position: relative;
+}
+.fav-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+}
+
+/* Üres szekció placeholder */
+.fav-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 16px;
+  text-align: center;
+  color: var(--color-text-muted, #888);
+  background: rgba(255,255,255,.03);
+  border-radius: 10px;
+  border: 1px dashed rgba(255,255,255,.08);
+}
+.fav-empty-icon {
+  font-size: 2rem;
+}
+.fav-empty p {
+  margin: 0;
+  font-size: .9rem;
+  line-height: 1.5;
+}
+
+/* Globális üres állapot (0 kedvenc) */
+.fav-global-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--color-text-muted, #888);
+}
