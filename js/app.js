@@ -98,6 +98,7 @@ async function renderApp() {
   bindFavMovieCards();     // kedvencek: film-kártya kattintás
   bindFavSeriesCards();    // kedvencek: sorozat-kártya kattintás
   bindPlayerVodMeta();     // player alatt VOD/sorozat meta Xtream infóból
+  bindPlayerLiveEpg();     // ÚJ: Live TV EPG „Most / Következik”
   applySearch(searchTerm);
 
   if (currentView === 'player') await mountPlayer(playerKey);
@@ -1152,6 +1153,64 @@ function applySearch(term) {
     if (show) visible++;
   });
   if (empty) empty.classList.toggle('hidden', visible !== 0);
+}
+/* ── Player nézet Live EPG (Most / Következik) ── */
+function bindPlayerLiveEpg() {
+  const card = document.querySelector('.player-layout .detail-card[data-live-stream-id]');
+  if (!card) return;
+
+  const streamId = card.dataset.liveStreamId;
+  const nowTitleEl  = card.querySelector('#player-epg-now-title');
+  const nowTimeEl   = card.querySelector('#player-epg-now-time');
+  const nextTitleEl = card.querySelector('#player-epg-next-title');
+  const nextTimeEl  = card.querySelector('#player-epg-next-time');
+
+  if (!streamId || !nowTitleEl || !nowTimeEl || !nextTitleEl || !nextTimeEl) return;
+
+  const creds = loadXtreamCredentials();
+  if (!creds) {
+    nowTitleEl.textContent  = 'EPG nem elérhető';
+    nowTimeEl.textContent   = 'Xtream bejelentkezés kell';
+    nextTitleEl.textContent = '';
+    nextTimeEl.textContent  = '';
+    return;
+  }
+
+  nowTitleEl.textContent  = 'Betöltés…';
+  nowTimeEl.textContent   = '';
+  nextTitleEl.textContent = '';
+  nextTimeEl.textContent  = '';
+
+  fetchShortEpg(creds, streamId, 3)
+    .then(rows => {
+      if (!rows.length) {
+        nowTitleEl.textContent  = 'Nincs EPG adat';
+        nowTimeEl.textContent   = '';
+        nextTitleEl.textContent = '';
+        nextTimeEl.textContent  = '';
+        return;
+      }
+
+      const now  = rows[0];
+      const next = rows[1];
+
+      nowTitleEl.textContent = now.title || 'Ismeretlen műsor';
+      nowTimeEl.textContent  = now.time + (now.endTime ? ` – ${now.endTime}` : '');
+
+      if (next) {
+        nextTitleEl.textContent = next.title || '—';
+        nextTimeEl.textContent  = next.time + (next.endTime ? ` – ${next.endTime}` : '');
+      } else {
+        nextTitleEl.textContent = 'Nincs következő adat';
+        nextTimeEl.textContent  = '';
+      }
+    })
+    .catch(() => {
+      nowTitleEl.textContent  = 'EPG hiba';
+      nowTimeEl.textContent   = '';
+      nextTitleEl.textContent = '';
+      nextTimeEl.textContent  = '';
+    });
 }
 
 window.addEventListener('hashchange', () => { playerService.destroy(); renderApp(); });
