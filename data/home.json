@@ -1,0 +1,10 @@
+{
+  "hero": {
+    "key": "royal",
+    "title": "Volt egyszer egy királyi nyár",
+    "subtitle": "Folytasd ott, ahol abbahagytad",
+    "description": "A player a dashboardból hitelesített felhasználóval indul, ezért nincs külön source setup vagy playlist-import. A fókusz a gyors tartalomelérésen és a prémium pop-art megjelenésen van."
+  },
+  "continueWatching": ["royal", "heist", "arena", "retro"],
+  "liveNow": ["m4", "filmplus", "kids", "hirtv"]
+}

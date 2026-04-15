@@ -1,0 +1,49 @@
+{
+  "groups": ["Összes csatorna", "Sport", "Filmek", "Hírek", "Gyerek", "Dokumentum"],
+  "channels": [
+    {
+      "key": "m4",
+      "title": "M4 Sport HD",
+      "status": "Most: Esti meccs • Köv: Elemző stúdió",
+      "group": "Sport",
+      "epg": [
+        {"time":"18:00","title":"Bemelegítés"},
+        {"time":"19:00","title":"Esti meccs"},
+        {"time":"21:00","title":"Elemző stúdió"}
+      ]
+    },
+    {
+      "key": "filmplus",
+      "title": "Film+ HD",
+      "status": "Most: Akció este • Köv: Thrill Zone",
+      "group": "Filmek",
+      "epg": [
+        {"time":"18:30","title":"Klasszik akció"},
+        {"time":"20:00","title":"Akció este"},
+        {"time":"22:10","title":"Thrill Zone"}
+      ]
+    },
+    {
+      "key": "hirtv",
+      "title": "HírTV",
+      "status": "Most: Külpolitika • Köv: Esti híradó",
+      "group": "Hírek",
+      "epg": [
+        {"time":"18:00","title":"Napközben"},
+        {"time":"19:30","title":"Külpolitika"},
+        {"time":"21:00","title":"Esti híradó"}
+      ]
+    },
+    {
+      "key": "kids",
+      "title": "Kids Club",
+      "status": "Most: Retro toons • Köv: Mini heroes",
+      "group": "Gyerek",
+      "epg": [
+        {"time":"18:15","title":"Mini Mix"},
+        {"time":"19:00","title":"Retro toons"},
+        {"time":"20:00","title":"Mini heroes"}
+      ]
+    }
+  ]
+}
