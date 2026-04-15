@@ -118,7 +118,8 @@ export async function renderPlayerView(currentKey = 'royal') {
 
   const nextEpisodePanel = buildNextEpisodePanel(xtream);
 
-  const vodId = !isLive && xtream?.type === 'movie' ? (xtream.streamId || '') : '';
+  const vodId    = !isLive && xtream?.type === 'movie'  ? (xtream.streamId || '')   : '';
+  const seriesId = !isLive && xtream?.type === 'series' ? (xtream.seriesId || '') : '';
 
   return `
     <section class="player-layout">
@@ -144,13 +145,12 @@ export async function renderPlayerView(currentKey = 'royal') {
         </div>`
       }
 
-      <div class="detail-card"${vodId ? ` data-vod-id="${vodId}"` : ''}>
+      <div class="detail-card"${vodId ? ` data-vod-id="${vodId}"` : ''}${seriesId ? ` data-series-id="${seriesId}"` : ''}>
         <h4>${title}</h4>
         <dl>
           <div><dt>Típus</dt><dd>${type}</dd></div>
-          <div><dt>Állapot</dt><dd>${status}</dd></div>
           <div><dt>Kategória</dt><dd>${group}</dd></div>
-          ${!isLive && xtream?.type === 'movie' ? `
+          ${!isLive && (xtream?.type === 'movie' || xtream?.type === 'series') ? `
             <div><dt>Kiadás dátuma</dt><dd id="player-detail-release">–</dd></div>
             <div><dt>Főszereplők</dt><dd id="player-detail-cast">–</dd></div>
             <div><dt>Rendező</dt><dd id="player-detail-director">–</dd></div>

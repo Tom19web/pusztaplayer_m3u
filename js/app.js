@@ -97,7 +97,7 @@ async function renderApp() {
   bindFavoriteButtons();   // szívgombok minden nézetben
   bindFavMovieCards();     // kedvencek: film-kártya kattintás
   bindFavSeriesCards();    // kedvencek: sorozat-kártya kattintás
-  bindPlayerVodMeta();     // player alatt VOD meta a get_vod_info-ból
+  bindPlayerVodMeta();     // player alatt VOD/sorozat meta Xtream infóból
   applySearch(searchTerm);
 
   if (currentView === 'player') await mountPlayer(playerKey);
@@ -1029,13 +1029,14 @@ function bindNextEpisode() {
   });
 }
 
-/* ── Player nézet VOD metaadat (get_vod_info) ── */
+/* ── Player nézet VOD / sorozat metaadat (get_vod_info / get_series_info) ── */
 function bindPlayerVodMeta() {
-  const card = document.querySelector('.player-layout .detail-card[data-vod-id]');
+  const card = document.querySelector('.player-layout .detail-card');
   if (!card) return;
 
-  const vodId = card.dataset.vodId;
-  if (!vodId) return;
+  const vodId    = card.dataset.vodId;
+  const seriesId = card.dataset.seriesId;
+  if (!vodId && !seriesId) return;
 
   const releaseEl  = card.querySelector('#player-detail-release');
   const castEl     = card.querySelector('#player-detail-cast');
@@ -1055,16 +1056,35 @@ function bindPlayerVodMeta() {
   castEl.textContent     = '';
   directorEl.textContent = '';
 
-  xtreamGetVodInfo(creds.username, creds.password, vodId)
-    .then(data => {
-      const info = data && data.info ? data.info : {};
-      const release  = info.releasedate || info.year || '';
-      const cast     = info.cast || info.actors || '';
-      const director = info.director || '';
+  let loader;
 
-      releaseEl.textContent  = release  || 'Ismeretlen';
-      castEl.textContent     = cast     || 'Nincs adat';
-      directorEl.textContent = director || 'Nincs adat';
+  if (vodId) {
+    loader = xtreamGetVodInfo(creds.username, creds.password, vodId)
+      .then(data => {
+        const info = data && data.info ? data.info : {};
+        return {
+          release:  info.releasedate || info.year || '',
+          cast:     info.cast || info.actors || '',
+          director: info.director || ''
+        };
+      });
+  } else {
+    loader = xtreamGetSeriesInfo(creds.username, creds.password, seriesId)
+      .then(data => {
+        const info = data && data.info ? data.info : {};
+        return {
+          release:  info.releaseDate || info.year || '',
+          cast:     info.cast || '',
+          director: info.director || ''
+        };
+      });
+  }
+
+  loader
+    .then(meta => {
+      releaseEl.textContent  = meta.release  || 'Ismeretlen';
+      castEl.textContent     = meta.cast     || 'Nincs adat';
+      directorEl.textContent = meta.director || 'Nincs adat';
     })
     .catch(() => {
       releaseEl.textContent  = 'Nincs adat';
