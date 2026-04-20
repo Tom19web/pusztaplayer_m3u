@@ -23,6 +23,7 @@ export async function mountPlayer(key) {
   const video        = document.getElementById('main-video');
   const status       = document.getElementById('player-status');
   const progressFill = document.getElementById('progress-fill');
+  const progressBar  = document.getElementById('progress-bar');
   if (!video) return;
 
   const history     = typeof getWatchHistory === 'function' ? getWatchHistory() : [];
@@ -50,6 +51,11 @@ export async function mountPlayer(key) {
 
     status.innerHTML = '<strong>Lejátszás kész.</strong> A stream sikeresen elindult.';
 
+    // Live TV esetén progress bar elrejtése
+    if (session.isLive) {
+      if (progressBar) progressBar.style.display = 'none';
+    }
+
     const playlist = getImportedPlaylist();
     let histMeta = null;
     if (playlist) {
@@ -70,23 +76,26 @@ export async function mountPlayer(key) {
     });
 
     playerService.onProgress(({ current, duration, ratio }) => {
-      if (progressFill) {
-        progressFill.style.width = `${Math.max(0, Math.min(100, ratio))}%`;
-      }
-      if (!session.isLive && duration && Number.isFinite(duration)) {
-        const delta = Math.abs(current - lastSavedProgress);
-        if (current >= 5 && delta >= 15) {
-          lastSavedProgress = current;
-          addToHistory({
-            key,
-            title:     histMeta?.title     || session.title || key,
-            type:      histMeta?.type      || (session.isLive ? 'live' : 'movie'),
-            group:     histMeta?.group     || '',
-            logo:      histMeta?.logo      || '',
-            streamUrl: session.streamUrl   || '',
-            position:  current,
-            duration
-          });
+      // Progress bar csak VOD / sorozat esetén frissül
+      if (!session.isLive) {
+        if (progressFill) {
+          progressFill.style.width = `${Math.max(0, Math.min(100, ratio))}%`;
+        }
+        if (duration && Number.isFinite(duration)) {
+          const delta = Math.abs(current - lastSavedProgress);
+          if (current >= 5 && delta >= 15) {
+            lastSavedProgress = current;
+            addToHistory({
+              key,
+              title:     histMeta?.title     || session.title || key,
+              type:      histMeta?.type      || 'movie',
+              group:     histMeta?.group     || '',
+              logo:      histMeta?.logo      || '',
+              streamUrl: session.streamUrl   || '',
+              position:  current,
+              duration
+            });
+          }
         }
       }
     });
