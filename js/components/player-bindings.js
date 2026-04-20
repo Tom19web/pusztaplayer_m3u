@@ -1,6 +1,7 @@
 /**
  * player-bindings.js
  * Player mount, EPG betöltés, VOD/sorozat meta, Live EPG a player nézetben.
+ * + bindPlayerControls(): play/pause, hangsáv, felirat, kedvenc, fullscreen
  */
 
 import { playerService }                              from '../services/player.js';
@@ -11,21 +12,22 @@ import { loadXtreamCredentials }                      from '../services/playlist
 import { getImportedPlaylist }                        from '../services/playlist-import.js';
 import { addToHistory }                               from '../store/actions.js';
 import { getWatchHistory }                            from '../store/selectors.js';
+import { toggleFavorite, isFavorite }                 from '../store/actions.js';
+import { bindFavoriteButtons }                        from '../components/favorites-bindings.js';
 
 /* ═════════════════════════════════════════
    PLAYER MOUNT
    ═════════════════════════════════════════ */
 
 export async function mountPlayer(key) {
-  const video       = document.getElementById('main-video');
-  const status      = document.getElementById('player-status');
-  const progressBar = document.querySelector('.progress > div');
-  const buttons     = [...document.querySelectorAll('.control-btn')];
+  const video        = document.getElementById('main-video');
+  const status       = document.getElementById('player-status');
+  const progressFill = document.getElementById('progress-fill');
   if (!video) return;
 
   const history     = typeof getWatchHistory === 'function' ? getWatchHistory() : [];
   const historyItem = history.find(h => h.key === key);
-  let resumeFrom       = 0;
+  let resumeFrom        = 0;
   let lastSavedProgress = 0;
 
   status.innerHTML = '<strong>Betöltés...</strong> Stream inicializálása.';
@@ -53,8 +55,8 @@ export async function mountPlayer(key) {
     if (playlist) {
       const allCh = playlist.liveChannels || playlist.channels || [];
       histMeta = allCh.find(c => c.key === key)
-        || (playlist.movies || []).find(c => c.key === key)
-        || (playlist.series || []).find(c => c.key === key)
+        || (playlist.movies  || []).find(c => c.key === key)
+        || (playlist.series  || []).find(c => c.key === key)
         || null;
     }
 
@@ -68,8 +70,8 @@ export async function mountPlayer(key) {
     });
 
     playerService.onProgress(({ current, duration, ratio }) => {
-      if (progressBar) {
-        progressBar.style.width = `${Math.max(0, Math.min(100, ratio))}%`;
+      if (progressFill) {
+        progressFill.style.width = `${Math.max(0, Math.min(100, ratio))}%`;
       }
       if (!session.isLive && duration && Number.isFinite(duration)) {
         const delta = Math.abs(current - lastSavedProgress);
@@ -88,17 +90,142 @@ export async function mountPlayer(key) {
         }
       }
     });
+
+    // Controls bekötése miután a session megvan
+    bindPlayerControls(key, session);
+
   } catch (error) {
     status.classList.add('error');
     status.innerHTML = `<strong>Stream hiba.</strong> ${error.message}`;
   }
+}
 
-  buttons.forEach(btn => {
-    const label = btn.textContent.trim();
-    if (label.includes('Lejátszás'))  btn.addEventListener('click', () => playerService.play());
-    if (label.includes('Hang'))       btn.addEventListener('click', () => playerService.setVolume(video.volume > 0 ? 0 : 1));
-    if (label.includes('Fullscreen')) btn.addEventListener('click', () => video.requestFullscreen?.());
+/* ═════════════════════════════════════════
+   PLAYER CONTROLS BINDING
+   ═════════════════════════════════════════ */
+
+export function bindPlayerControls(key, session = null) {
+  const video = document.getElementById('main-video');
+  if (!video) return;
+
+  // ── Play / Pause ──────────────────────────────
+  const playBtn = document.getElementById('ctrl-playpause');
+  if (playBtn) {
+    const updatePlayBtn = () => {
+      playBtn.textContent = video.paused ? '▶ Lejátszás' : '⏸ Szünet';
+    };
+    video.addEventListener('play',  updatePlayBtn);
+    video.addEventListener('pause', updatePlayBtn);
+    updatePlayBtn();
+    playBtn.addEventListener('click', () => {
+      video.paused ? playerService.play() : playerService.pause();
+    });
+  }
+
+  // ── Fullscreen ────────────────────────────────
+  const fsBtn = document.getElementById('ctrl-fullscreen');
+  if (fsBtn) {
+    fsBtn.addEventListener('click', () => {
+      const wrap = video.closest('.video-wrap') || video;
+      wrap.requestFullscreen?.();
+    });
+  }
+
+  // ── Hang (audio track) ────────────────────────
+  const audioBtn  = document.getElementById('ctrl-audio');
+  const audioMenu = document.getElementById('audio-menu');
+  if (audioBtn && audioMenu) {
+    const getHls = () => window.__hlsInstance || null;
+    audioBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const hls = getHls();
+      if (!hls) {
+        showDropdown(audioMenu, [{ label: 'Natív lejátszás – hangsáv nem váltható', disabled: true }]);
+        toggleMenu(audioMenu, subtitleMenu);
+        return;
+      }
+      const tracks = hls.audioTracks || [];
+      if (tracks.length <= 1) {
+        showDropdown(audioMenu, [{ label: 'Nincs alternatív hangsáv', disabled: true }]);
+      } else {
+        showDropdown(audioMenu, tracks.map((t, i) => ({
+          label:   t.name || t.lang || `Hangsáv ${i + 1}`,
+          active:  hls.audioTrack === i,
+          onClick: () => { hls.audioTrack = i; closeAllMenus(); }
+        })));
+      }
+      toggleMenu(audioMenu, subtitleMenu);
+    });
+  }
+
+  // ── Felirat (subtitle track) ──────────────────
+  const subBtn       = document.getElementById('ctrl-subtitle');
+  const subtitleMenu = document.getElementById('subtitle-menu');
+  if (subBtn && subtitleMenu) {
+    const getHls = () => window.__hlsInstance || null;
+    subBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const hls = getHls();
+      if (!hls) {
+        showDropdown(subtitleMenu, [{ label: 'Natív lejátszás – felirat nem elérhető', disabled: true }]);
+        toggleMenu(subtitleMenu, audioMenu);
+        return;
+      }
+      const tracks = hls.subtitleTracks || [];
+      if (!tracks.length) {
+        showDropdown(subtitleMenu, [{ label: 'Nincs elérhető felirat', disabled: true }]);
+      } else {
+        const items = [
+          { label: 'Kikapcsolva', active: hls.subtitleTrack === -1, onClick: () => { hls.subtitleTrack = -1; closeAllMenus(); } },
+          ...tracks.map((t, i) => ({
+            label:   t.name || t.lang || `Felirat ${i + 1}`,
+            active:  hls.subtitleTrack === i,
+            onClick: () => { hls.subtitleTrack = i; closeAllMenus(); }
+          }))
+        ];
+        showDropdown(subtitleMenu, items);
+      }
+      toggleMenu(subtitleMenu, audioMenu);
+    });
+  }
+
+  // ── Outside click zárja a menüket ────────────
+  document.addEventListener('click', closeAllMenus);
+
+  // ── Kedvenc gomb bekötése ─────────────────────
+  bindFavoriteButtons();
+}
+
+/* ── Dropdown segédfüggvények ── */
+
+function showDropdown(menuEl, items) {
+  menuEl.innerHTML = items.map(item => `
+    <button
+      class="ctrl-dropdown-item${item.active ? ' active' : ''}"
+      ${item.disabled ? 'disabled' : ''}
+      style="display:block;width:100%;padding:8px 14px;text-align:left;background:none;border:none;
+             cursor:${item.disabled ? 'default' : 'pointer'};
+             color:${item.disabled ? 'var(--color-text-muted)' : 'var(--color-text)'};
+             font-size:.875rem;
+             background-color:${item.active ? 'var(--color-primary-highlight)' : 'transparent'}"
+    >${item.label}</button>
+  `).join('');
+  items.forEach((item, i) => {
+    if (item.onClick && !item.disabled) {
+      menuEl.querySelectorAll('.ctrl-dropdown-item')[i]
+        ?.addEventListener('click', e => { e.stopPropagation(); item.onClick(); });
+    }
   });
+}
+
+function toggleMenu(target, other) {
+  other?.classList.add('hidden');
+  target.classList.toggle('hidden');
+}
+
+function closeAllMenus() {
+  document.getElementById('audio-menu')?.classList.add('hidden');
+  document.getElementById('subtitle-menu')?.classList.add('hidden');
 }
 
 /* ═════════════════════════════════════════
