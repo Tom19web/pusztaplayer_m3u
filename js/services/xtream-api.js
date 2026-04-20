@@ -3,9 +3,28 @@
  * player_api.php alapú JSON API
  */
 
+/*const XTREAM_SERVER = 'http://movaloget.cc:42310';*/
 const XTREAM_SERVER = 'https://live.pusztaplay.eu';
 const USER_AGENT    = 'PusztaPlayer v0.8';
 const CREDS_KEY     = 'pusztaplay_xtream_user';
+
+/**
+ * Ha a szerver HTTP-s vagy idegen domaines URL-t ad vissza (pl. logóknál),
+ * átírjuk a saját HTTPS proxy domainünkre.
+ */
+function sanitizeUrl(url) {
+  if (!url || typeof url !== 'string') return url;
+  try {
+    const u = new URL(url);
+    if (u.hostname === 'live.pusztaplay.eu') return url;
+    u.hostname = 'live.pusztaplay.eu';
+    u.port     = '';
+    u.protocol = 'https:';
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
 
 export function saveXtreamCredentials(u, p) {
   try { localStorage.setItem(CREDS_KEY, JSON.stringify({ username: u, password: p })); } catch (e) {}
@@ -67,7 +86,7 @@ export async function xtreamGetLive(username, password) {
     return {
       key: `live_${s.stream_id || i}`, streamId: s.stream_id,
       title: s.name || 'Ismeretlen csatorna', group,
-      logo: s.stream_icon || '', status: `Élő · ${group}`,
+      logo: sanitizeUrl(s.stream_icon || ''), status: `Élő · ${group}`,
       epg: [], type: 'live', streamUrl: buildLiveUrl(username, password, s.stream_id)
     };
   });
@@ -87,7 +106,7 @@ export async function xtreamGetMovies(username, password) {
     return {
       key: `vod_${s.stream_id || i}`, streamId: s.stream_id,
       title: s.name || 'Ismeretlen film', group,
-      logo: s.stream_icon || '', status: group, type: 'movie',
+      logo: sanitizeUrl(s.stream_icon || ''), status: group, type: 'movie',
       streamUrl: buildVodUrl(username, password, s.stream_id, ext)
     };
   });
@@ -106,7 +125,7 @@ export async function xtreamGetSeries(username, password) {
     return {
       key: `series_${s.series_id || i}`, seriesId: s.series_id,
       title: s.name || 'Ismeretlen sorozat', group,
-      logo: s.cover || s.stream_icon || '', status: group, type: 'series', streamUrl: null
+      logo: sanitizeUrl(s.cover || s.stream_icon || ''), status: group, type: 'series', streamUrl: null
     };
   });
   const extraGroups  = [...new Set(series.map(s => s.group))].filter(g => !catOrder.includes(g));
