@@ -10,6 +10,7 @@ import { renderPlayerControls } from '../components/player-controls.js';
 import { getImportedPlaylist }  from '../services/playlist-import.js';
 import { isFavorite }           from '../store/actions.js';
 
+
 export function renderPlayerLoadingView() {
   return `
     <section class="content-grid">
@@ -17,6 +18,7 @@ export function renderPlayerLoadingView() {
     </section>
   `;
 }
+
 
 function findFromPlaylist(contentId) {
   const p = getImportedPlaylist();
@@ -29,6 +31,7 @@ function findFromPlaylist(contentId) {
   );
 }
 
+
 function typeLabel(item) {
   if (!item) return 'VOD';
   if (item.type === 'live')   return 'Live TV';
@@ -36,6 +39,7 @@ function typeLabel(item) {
   if (item.type === 'series') return 'Sorozat';
   return item.type || 'VOD';
 }
+
 
 function buildNextEpisodePanel(currentItem) {
   if (!currentItem || currentItem.type !== 'series') return '';
@@ -77,6 +81,7 @@ function buildNextEpisodePanel(currentItem) {
   `;
 }
 
+
 export async function renderPlayerView(currentKey = 'royal') {
   const xtream = findFromPlaylist(currentKey);
   const mock   = playerData[currentKey] || playerData.royal;
@@ -89,7 +94,6 @@ export async function renderPlayerView(currentKey = 'royal') {
   const group     = xtream?.group     || mock.audio || '—';
   const noStream  = !streamUrl;
 
-  // Kedvenc állapot
   const fav = isFavorite(currentKey);
   const favType = xtream?.type || (isLive ? 'live' : 'movie');
 
@@ -142,7 +146,7 @@ export async function renderPlayerView(currentKey = 'royal') {
             ${isLive ? '<div class="live-badge">LIVE</div>' : ''}
             <video id="main-video" class="video" controls playsinline preload="metadata"></video>
           </div>
-          ${renderPlayerControls()}
+          ${renderPlayerControls(currentKey)}
         </div>`
       }
 
@@ -150,10 +154,7 @@ export async function renderPlayerView(currentKey = 'royal') {
         <h4>${title}</h4>
 
         ${isLive ? `
-<!-- LIVE LAYOUT: bal meta + jobb EPG (marad ahogy volt) -->
 <div class="detail-card-inner">
-
-  <!-- Bal oszlop: logo + meta egybe -->
   <div class="live-left">
     ${xtream?.logo ? `
       <div class="player-detail-logo">
@@ -164,7 +165,6 @@ export async function renderPlayerView(currentKey = 'royal') {
           onerror="this.parentElement.style.display='none'"
         >
       </div>` : ''}
-
     <div class="detail-meta">
       <dl>
         <div><dt>Típus</dt><dd>${type}</dd></div>
@@ -175,12 +175,9 @@ export async function renderPlayerView(currentKey = 'royal') {
       </div>
     </div>
   </div>
-
-  <!-- Jobb oszlop: EPG -->
   <div id="live-detail-epg" class="live-detail-epg"></div>
 </div>
         ` : (xtream?.type === 'movie' || xtream?.type === 'series') ? `
-                   <!-- VOD / SOROZAT: bal poster + meta egymás mellett, jobb oldalt tartalom -->
           <div class="detail-card-inner vod-layout">
             <div class="vod-left">
               <div class="vod-poster">
@@ -192,7 +189,6 @@ export async function renderPlayerView(currentKey = 'royal') {
                     onerror="this.style.display='none'">
                 ` : ''}
               </div>
-
               <dl class="vod-meta">
                 <div><dt>Kiadás dátuma</dt><dd id="player-detail-release">–</dd></div>
                 <div><dt>Műfaj</dt><dd id="player-detail-genre">–</dd></div>
@@ -200,18 +196,15 @@ export async function renderPlayerView(currentKey = 'royal') {
                 <div><dt>Rendező</dt><dd id="player-detail-director">–</dd></div>
               </dl>
             </div>
-
             <div class="vod-plot">
               <h5>Rövid tartalom</h5>
               <p id="player-detail-plot">–</p>
             </div>
           </div>
-
           <div class="detail-actions">
             ${favBtn}
           </div>
         ` : `
-          <!-- fallback -->
           <div class="detail-card-inner">
             <div class="detail-meta">
               <dl>
