@@ -29,12 +29,13 @@ export function bindFavoriteButtons() {
       const key = btn.dataset.favToggle;
       if (!key) return;
 
-      const card = btn.closest('[data-fav-key],[data-channel-key],[data-movie-key],[data-open-series],[data-series-key]');
+      // A card lehet a szülő elem VAGY maga a gomb (pl. fav-player-btn esetén)
+      const card = btn.closest('[data-fav-key],[data-channel-key],[data-movie-key],[data-open-series],[data-series-key]') || btn;
 
-      let type     = 'movie';
-      let title    = key;
-      let group    = '';
-      let logo     = '';
+      let type      = 'movie';
+      let title     = key;
+      let group     = '';
+      let logo      = '';
       let streamUrl = '';
       let seriesId  = '';
       let streamId  = '';
@@ -42,15 +43,15 @@ export function bindFavoriteButtons() {
       if (card) {
         if (card.dataset.channelKey) {
           type     = 'live';
-          title    = card.dataset.channelTitle   || key;
-          group    = card.dataset.channelGroup   || '';
-          logo     = card.dataset.channelLogo    || '';
+          title    = card.dataset.channelTitle    || key;
+          group    = card.dataset.channelGroup    || '';
+          logo     = card.dataset.channelLogo     || '';
           streamId = card.dataset.channelStreamId || '';
         } else if (card.dataset.movieKey) {
           type     = 'movie';
-          title    = card.dataset.movieTitle   || key;
-          group    = card.dataset.movieGroup   || '';
-          logo     = card.dataset.movieLogo    || '';
+          title    = card.dataset.movieTitle    || key;
+          group    = card.dataset.movieGroup    || '';
+          logo     = card.dataset.movieLogo     || '';
           streamId = card.dataset.movieStreamId || '';
         } else if (card.dataset.openSeries || card.dataset.seriesKey) {
           type     = 'series';
@@ -59,7 +60,6 @@ export function bindFavoriteButtons() {
           logo     = card.dataset.seriesLogo  || '';
           seriesId = card.dataset.openSeries  || key;
         }
-        // data-fav-key esetén csak toggle, nincs extra adat
       }
 
       // Playlist adatok kiegészítése
@@ -80,8 +80,9 @@ export function bindFavoriteButtons() {
       const added = toggleFavorite({ key, title, type, group, logo, streamUrl, seriesId, streamId });
 
       // Gomb állapot frissítése
-      btn.classList.toggle('fav-heart--active', added);
-      btn.textContent = added ? '♥' : '♡';
+      btn.classList.toggle('fav-heart--active',    added);
+      btn.classList.toggle('fav-player-btn--active', added);
+      btn.textContent = added ? '♥ Kedvenc' : '♡ Kedvencekhez';
       btn.title       = added ? 'Eltávolítás a kedvencekből' : 'Hozzáadás a kedvencekhez';
       btn.setAttribute('aria-pressed', String(added));
       btn.setAttribute('aria-label',   added ? 'Eltávolítás a kedvencekből' : 'Hozzáadás a kedvencekhez');
@@ -91,8 +92,8 @@ export function bindFavoriteButtons() {
         const favCard = btn.closest('.fav-card');
         if (favCard) {
           favCard.style.transition = 'opacity .25s, transform .25s';
-          favCard.style.opacity   = '0';
-          favCard.style.transform = 'scale(.9)';
+          favCard.style.opacity    = '0';
+          favCard.style.transform  = 'scale(.9)';
           setTimeout(() => favCard.remove(), 260);
         }
       }
