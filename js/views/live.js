@@ -1,14 +1,17 @@
 /**
  * PusztaPlay — Live TV View
- * FIX: csatornalista JS memóriában tárolva (data-all-channels JSON parse hiba kikeerülve)
+ * FIX: csatornalista JS memóriában tárolva (data-all-channels JSON parse hiba kikerülve)
  * FIX2: szívgomb hozzáadva minden csatorna-buttonhoz
+ * FEAT: intelligens zapping bar – kedvencek ⭐ + legutóbb nézett 🕐 + fallback
  */
 
-import { getLiveData }         from '../services/api.js';
-import { getImportedPlaylist } from '../services/playlist-import.js';
-import { isFavorite }          from '../store/actions.js';
+import { getLiveData }                        from '../services/api.js';
+import { getImportedPlaylist }                from '../services/playlist-import.js';
+import { isFavorite, getFavoritesByType }     from '../store/actions.js';
+import { getWatchHistory }                    from '../store/selectors.js';
 
-const PAGE_SIZE = 200;
+const PAGE_SIZE    = 200;
+const ZAPPING_SIZE = 8;
 
 let _allLiveChannels = [];
 
@@ -63,6 +66,70 @@ export function renderChannelPage(channels, offset = 0) {
   `;
 }
 
+/**
+ * Intelligens zapping bar összeállítása:
+ * 1. Kedvenc élő csatornák (⭐) – legelőre
+ * 2. Legutóbb nézett élő csatornák (🕐) – amik még nem kedvencek
+ * 3. Fallback: lista eleje – ha nincs elég history/kedvenc
+ */
+function getZappingChannels(allChannels) {
+  const resultKeys = new Set();
+  const result     = [];
+
+  // 1. Kedvencek
+  const favs = getFavoritesByType('live');
+  for (const fav of favs) {
+    if (result.length >= ZAPPING_SIZE) break;
+    const ch = allChannels.find(c => c.key === fav.key);
+    if (ch && !resultKeys.has(ch.key)) {
+      result.push({ ...ch, _zapBadge: '⭐', _zapTitle: 'Kedvenc' });
+      resultKeys.add(ch.key);
+    }
+  }
+
+  // 2. Legutóbb nézett
+  const history = getWatchHistory().filter(h => h.type === 'live');
+  for (const h of history) {
+    if (result.length >= ZAPPING_SIZE) break;
+    const ch = allChannels.find(c => c.key === h.key);
+    if (ch && !resultKeys.has(ch.key)) {
+      result.push({ ...ch, _zapBadge: '🕐', _zapTitle: 'Nemrég nézett' });
+      resultKeys.add(ch.key);
+    }
+  }
+
+  // 3. Fallback – lista eleje
+  for (const ch of allChannels) {
+    if (result.length >= ZAPPING_SIZE) break;
+    if (!resultKeys.has(ch.key)) {
+      result.push({ ...ch, _zapBadge: null, _zapTitle: null });
+      resultKeys.add(ch.key);
+    }
+  }
+
+  return result;
+}
+
+function renderZappingBar(allChannels) {
+  const zapChannels = getZappingChannels(allChannels);
+  if (!zapChannels.length) return '';
+
+  return `
+    <div class="zapping-bar">
+      ${zapChannels.map(ch => `
+        <button
+          class="control-btn quick-zap"
+          data-zap-channel="${ch.key}"
+          title="${ch._zapTitle ? ch._zapTitle + ': ' + ch.title : ch.title}">
+          ${renderChannelLogo(ch)}
+          ${ch.title}
+          ${ch._zapBadge ? `<span class="zap-badge" aria-label="${ch._zapTitle}">${ch._zapBadge}</span>` : ''}
+        </button>
+      `).join('')}
+    </div>
+  `;
+}
+
 export async function renderLiveView() {
   const imported = getImportedPlaylist();
 
@@ -104,11 +171,7 @@ export async function renderLiveView() {
   return `
     <section class="content-grid" data-search-scope="live">
       <div class="section-head"><div class="headline">Live TV</div><span class="pill">${pill}</span></div>
-      <div class="zapping-bar">
-        ${channels.slice(0, 8).map(ch =>
-          `<button class="control-btn quick-zap" data-zap-channel="${ch.key}">${renderChannelLogo(ch)}${ch.title}</button>`
-        ).join('')}
-      </div>
+      ${renderZappingBar(_allLiveChannels)}
       <div class="layout-live">
         <div class="panel groups" id="live-groups-panel">
           ${groups.map((g, i) =>
