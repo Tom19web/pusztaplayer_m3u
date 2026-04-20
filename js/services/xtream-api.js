@@ -3,7 +3,7 @@
  * player_api.php alapú JSON API
  */
 
-const XTREAM_SERVER = 'http://movaloget.cc:42310';
+const XTREAM_SERVER = 'https://live.pusztaplay.eu';
 const USER_AGENT    = 'PusztaPlayer v0.8';
 const CREDS_KEY     = 'pusztaplay_xtream_user';
 
