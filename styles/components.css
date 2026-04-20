@@ -143,13 +143,11 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 14px; /* volt: 8px — nagyobb sorköz az elemek között */
+  gap: 14px;
   overflow: hidden;
   flex: 1.2;
   min-width: 0;
 }
-
-/* Felső "eyebrow" felirat — Folytasd ahol abbahagytad */
 .hero-eyebrow {
   margin: 0;
   font-family: Bangers, cursive;
@@ -157,11 +155,9 @@
   letter-spacing: 1px;
   color: #fff;
   line-height: 1;
-  /* vékony elválasztó alul, vizuálisan leválasztja a headline-tól */
   padding-bottom: 14px;
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
 }
-
 .hero-copy h2 {
   margin: 0;
   font-family: Bangers, cursive;
@@ -231,10 +227,9 @@
 }
 /* === /HERO === */
 
-/* ═══════════════════════════════════════════════════════════════
-   UTOLJÁRA MEGTEKINTETT — kettéválasztott Live / Film+Sorozat
-   ═══════════════════════════════════════════════════════════════ */
-
+/* =================================================================
+   UTOLJÁRA MEGTEKINTETT
+   ================================================================= */
 .history-subsection {
   margin-top: 14px;
 }
@@ -260,8 +255,6 @@
 .pill--yellow {
   background: var(--yellow, #f6c800);
 }
-
-/* ── Live TV grid — 16:9 ──────────────────────────────────────────── */
 .history-grid--live {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -277,8 +270,6 @@
   align-items: center;
   justify-content: center;
 }
-
-/* Logo kép — contain, ne nyuljon szét — history és live-now kártyákhoz */
 .hist-live-logo,
 .live-now-logo {
   max-width: 70%;
@@ -291,8 +282,6 @@
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
   display: block;
 }
-
-/* ── Film & Sorozat grid — 2:3 ───────────────────────────────────────── */
 .history-grid--media {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -322,8 +311,6 @@
   opacity: 0.45;
   pointer-events: none;
 }
-
-/* Közös badge-ek */
 .hist-live-badge {
   position: absolute;
   top: 6px;
@@ -366,8 +353,6 @@
   text-align: center;
   padding: 6px;
 }
-
-/* Hover play overlay */
 .history-play-overlay {
   position: absolute;
   inset: 0;
@@ -395,25 +380,14 @@
   pointer-events: none;
   white-space: nowrap;
 }
-
-/* Reszponzív */
 @media (max-width: 900px) {
-  .history-grid--live {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  }
-  .history-grid--media {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  }
+  .history-grid--live { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  .history-grid--media { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
 }
 @media (max-width: 520px) {
-  .history-grid--live {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .history-grid--media {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .history-grid--live { grid-template-columns: repeat(2, 1fr); }
+  .history-grid--media { grid-template-columns: repeat(2, 1fr); }
 }
-/* === /UTOLJÁRA MEGTEKINTETT === */
 
 /* === ÉLŐ MOST GRID === */
 .live-now-grid {
@@ -435,11 +409,6 @@
   align-items: center;
   justify-content: center;
 }
-
-/*
- * EPG overlay — csak az alsó 58%-ot fedi, a logo fent látható marad.
- * A tetején átlátszóról indul a gradient → alul tömör sötét.
- */
 .live-now-epg-overlay {
   position: absolute;
   left: 0;
@@ -471,21 +440,9 @@
   line-height: 1.4;
   width: 100%;
 }
-@media (max-width: 1100px) {
-  .live-now-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-@media (max-width: 800px) {
-  .live-now-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-@media (max-width: 520px) {
-  .live-now-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
+@media (max-width: 1100px) { .live-now-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 800px)  { .live-now-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 520px)  { .live-now-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .live-dot::before {
   content: "";
   display: inline-block;
@@ -497,17 +454,9 @@
   animation: pulseDot 1.2s ease-in-out infinite;
 }
 @keyframes pulseDot {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.5;
-    transform: scale(0.7);
-  }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.7); }
 }
-/* === /ÉLŐ MOST === */
 
 .actions {
   display: flex;
@@ -530,16 +479,8 @@
   overflow: hidden;
   max-height: 400px;
   background:
-    radial-gradient(
-      circle at 30% 20%,
-      rgba(255, 255, 255, 0.25) 0 6px,
-      transparent 7px
-    ),
-    radial-gradient(
-      circle at 60% 25%,
-      rgba(255, 255, 255, 0.18) 0 5px,
-      transparent 6px
-    ),
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,0.25) 0 6px, transparent 7px),
+    radial-gradient(circle at 60% 25%, rgba(255,255,255,0.18) 0 5px, transparent 6px),
     linear-gradient(160deg, #26d8e9, #4cb1c8 45%, #ff5a7c 120%);
   border-left: 4px solid #000;
   align-self: stretch;
@@ -557,7 +498,7 @@
   display: block;
 }
 .poster-badge {
-  background: rgba(0, 0, 0, 0.78);
+  background: rgba(0,0,0,0.78);
   border: 3px solid #fff;
   color: #fff;
   padding: 10px 12px;
@@ -607,11 +548,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.17) 1px,
-    transparent 1px
-  );
+  background: radial-gradient(circle, rgba(255,255,255,0.17) 1px, transparent 1px);
   background-size: 12px 12px;
   opacity: 0.55;
 }
@@ -770,7 +707,7 @@
   border: 3px dashed #555;
   border-radius: 18px;
   color: #ddd3c2;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255,255,255,0.04);
 }
 .channel-logo {
   width: 22px;
@@ -787,39 +724,22 @@
   font-size: 0.9rem;
 }
 @keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 @media (max-width: 1100px) {
-  .hero {
-    flex-wrap: wrap;
-    max-height: none;
-  }
-  .hero-desc {
-    display: none !important;
-  }
-  .skeleton-grid {
-    grid-template-columns: 1fr 1fr;
-  }
+  .hero { flex-wrap: wrap; max-height: none; }
+  .hero-desc { display: none !important; }
+  .skeleton-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 700px) {
-  .skeleton-grid {
-    grid-template-columns: 1fr;
-  }
-  .poster-art {
-    width: 100%;
-    max-height: 200px;
-  }
+  .skeleton-grid { grid-template-columns: 1fr; }
+  .poster-art { width: 100%; max-height: 200px; }
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   KEDVENCEK — fav-* stílusok
-   ═══════════════════════════════════════════════════════════════ */
-
+/* =================================================================
+   KEDVENCEK
+   ================================================================= */
 .fav-section {
   margin-bottom: 32px;
 }
@@ -829,9 +749,7 @@
   gap: 10px;
   margin-bottom: 14px;
 }
-.fav-section-icon {
-  font-size: 1.3rem;
-}
+.fav-section-icon { font-size: 1.3rem; }
 .fav-section-title {
   font-family: Bangers, cursive;
   font-size: 1.4rem;
@@ -839,19 +757,12 @@
   margin: 0;
   color: #f6c800;
 }
-.fav-grid {
-  display: grid;
-  gap: 14px;
-}
+.fav-grid { display: grid; gap: 14px; }
 .fav-grid--media {
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 12px;
 }
-
-.fav-card--media {
-  width: 100%;
-}
-
+.fav-card--media { width: 100%; }
 .fav-media-thumb {
   aspect-ratio: 2/3;
   background-size: cover !important;
@@ -867,11 +778,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.17) 1px,
-    transparent 1px
-  );
+  background: radial-gradient(circle, rgba(255,255,255,0.17) 1px, transparent 1px);
   background-size: 12px 12px;
   opacity: 0.55;
 }
@@ -898,8 +805,8 @@
   top: 7px;
   right: 7px;
   z-index: 10;
-  background: rgba(0, 0, 0, 0.62);
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(0,0,0,0.62);
+  border: 2px solid rgba(255,255,255,0.3);
   border-radius: 999px;
   width: 28px;
   height: 28px;
@@ -907,17 +814,15 @@
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition:
-    background 0.15s,
-    transform 0.12s;
+  transition: background 0.15s, transform 0.12s;
   line-height: 1;
 }
 .fav-heart:hover {
-  background: rgba(200, 0, 60, 0.8);
+  background: rgba(200,0,60,0.8);
   transform: scale(1.15);
 }
 .fav-heart--active {
-  background: rgba(200, 0, 60, 0.72);
+  background: rgba(200,0,60,0.72);
   border-color: #ff4466;
   color: #fff;
 }
@@ -930,17 +835,14 @@
   border: 3px dashed #444;
   border-radius: 16px;
   color: #888;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255,255,255,0.03);
   text-align: center;
 }
-.fav-empty-icon {
-  font-size: 2.2rem;
-  opacity: 0.7;
-}
+.fav-empty-icon { font-size: 2.2rem; opacity: 0.7; }
 
-/* ═══════════════════════════════════════════════════════════════
-   SERIES EPISODE PANEL — .sep-*
-   ═══════════════════════════════════════════════════════════════ */
+/* =================================================================
+   SERIES EPISODE PANEL
+   ================================================================= */
 .series-ep-panel {
   margin-top: 24px;
   border: 4px solid #000;
@@ -967,10 +869,7 @@
   filter: blur(6px) saturate(1.4);
   z-index: 0;
 }
-.sep-hero--loading {
-  min-height: 120px;
-  background: #1a1a1a;
-}
+.sep-hero--loading { min-height: 120px; background: #1a1a1a; }
 .sep-poster-art {
   position: relative;
   z-index: 1;
@@ -980,12 +879,7 @@
   overflow: hidden;
   border-right: 4px solid #000;
 }
-.sep-poster-art img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
+.sep-poster-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .sep-hero-copy {
   position: relative;
   z-index: 1;
@@ -1005,8 +899,8 @@
   margin-bottom: 4px;
 }
 .sep-meta-tag {
-  background: rgba(255, 255, 255, 0.09);
-  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255,255,255,0.09);
+  border: 1.5px solid rgba(255,255,255,0.18);
   border-radius: 999px;
   padding: 3px 10px;
   font-size: 0.78rem;
@@ -1021,18 +915,13 @@
   max-width: 60ch;
   margin: 0;
 }
-.sep-cast {
-  font-size: 0.78rem;
-  color: #888;
-  margin: 0;
-  max-width: 55ch;
-}
+.sep-cast { font-size: 0.78rem; color: #888; margin: 0; max-width: 55ch; }
 .sep-close-btn {
   position: absolute;
   top: 14px;
   right: 14px;
   z-index: 2;
-  background: rgba(0, 0, 0, 0.72);
+  background: rgba(0,0,0,0.72);
   color: #fff;
   border: 2px solid #444;
   border-radius: 999px;
@@ -1045,23 +934,16 @@
   box-shadow: 2px 2px 0 #000;
   transition: background 0.15s;
 }
-.sep-close-btn:hover {
-  background: #c00;
-  border-color: #f00;
-}
-.sep-seasons {
-  padding: 18px 20px;
-}
-.sep-season-block {
-  margin-bottom: 16px;
-}
+.sep-close-btn:hover { background: #c00; border-color: #f00; }
+.sep-seasons { padding: 18px 20px; }
+.sep-season-block { margin-bottom: 16px; }
 .sep-season-toggle {
   width: 100%;
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(246, 200, 0, 0.12);
-  border: 2px solid rgba(246, 200, 0, 0.3);
+  background: rgba(246,200,0,0.12);
+  border: 2px solid rgba(246,200,0,0.3);
   border-radius: 12px;
   padding: 12px 16px;
   cursor: pointer;
@@ -1073,33 +955,17 @@
   box-shadow: 3px 3px 0 #000;
 }
 .sep-season-toggle:hover,
-.sep-season-toggle.open {
-  background: rgba(246, 200, 0, 0.22);
-}
-.sep-season-label {
-  flex: 1;
-  text-align: left;
-}
-.sep-season-count {
-  font-family: inherit;
-  font-size: 0.85rem;
-  color: #bbb;
-  font-weight: normal;
-  letter-spacing: 0;
-}
-.sep-season-arrow {
-  font-size: 0.9rem;
-  color: #f6c800;
-}
+.sep-season-toggle.open { background: rgba(246,200,0,0.22); }
+.sep-season-label { flex: 1; text-align: left; }
+.sep-season-count { font-family: inherit; font-size: 0.85rem; color: #bbb; font-weight: normal; letter-spacing: 0; }
+.sep-season-arrow { font-size: 0.9rem; color: #f6c800; }
 .sep-episode-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 12px;
   margin-top: 12px;
 }
-.sep-episode-grid.hidden {
-  display: none;
-}
+.sep-episode-grid.hidden { display: none; }
 .sep-ep-card {
   border: 3px solid #000;
   border-radius: 14px;
@@ -1107,20 +973,12 @@
   background: #1c1c1c;
   box-shadow: 4px 4px 0 #000;
   cursor: pointer;
-  transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
   outline: none;
 }
 .sep-ep-card:hover,
-.sep-ep-card:focus-visible {
-  transform: translateY(-3px);
-  box-shadow: 6px 7px 0 #000;
-}
-.sep-ep-card:focus-visible {
-  outline: 3px solid var(--yellow, #f6c800);
-  outline-offset: 2px;
-}
+.sep-ep-card:focus-visible { transform: translateY(-3px); box-shadow: 6px 7px 0 #000; }
+.sep-ep-card:focus-visible { outline: 3px solid var(--yellow, #f6c800); outline-offset: 2px; }
 .sep-ep-thumb {
   position: relative;
   aspect-ratio: 16/9;
@@ -1142,7 +1000,7 @@
   position: absolute;
   top: 7px;
   left: 7px;
-  background: rgba(0, 0, 0, 0.78);
+  background: rgba(0,0,0,0.78);
   color: #f6c800;
   font-size: 0.7rem;
   font-weight: 800;
@@ -1155,7 +1013,7 @@
 .sep-ep-play-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.52);
+  background: rgba(0,0,0,0.52);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1164,21 +1022,14 @@
   z-index: 3;
 }
 .sep-ep-card:hover .sep-ep-play-overlay,
-.sep-ep-card:focus-visible .sep-ep-play-overlay {
-  opacity: 1;
-}
+.sep-ep-card:focus-visible .sep-ep-play-overlay { opacity: 1; }
 .sep-ep-play-icon {
   font-size: 2rem;
   color: #f6c800;
-  text-shadow: 0 0 12px rgba(246, 200, 0, 0.7);
+  text-shadow: 0 0 12px rgba(246,200,0,0.7);
   filter: drop-shadow(0 2px 6px #000);
 }
-.sep-ep-meta {
-  padding: 8px 10px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
+.sep-ep-meta { padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 3px; }
 .sep-ep-title {
   font-size: 0.82rem;
   color: #eee;
@@ -1188,26 +1039,30 @@
   overflow: hidden;
   line-height: 1.35;
 }
-.sep-ep-duration {
-  font-size: 0.72rem;
-  color: #777;
-}
+.sep-ep-duration { font-size: 0.72rem; color: #777; }
 @media (max-width: 900px) {
-  .sep-episode-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  }
-  .sep-poster-art {
-    width: 120px;
-  }
+  .sep-episode-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  .sep-poster-art { width: 120px; }
 }
 @media (max-width: 600px) {
-  .sep-poster-art {
-    display: none;
-  }
-  .sep-hero-copy {
-    padding: 16px;
-  }
-  .sep-episode-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .sep-poster-art { display: none; }
+  .sep-hero-copy { padding: 16px; }
+  .sep-episode-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* =================================================================
+   ZAPPING BAR — intelligens badge (⭐ kedvenc / 🕐 nemrég nézett)
+   ================================================================= */
+.quick-zap {
+  position: relative;
+}
+.zap-badge {
+  position: absolute;
+  top: -7px;
+  right: -5px;
+  font-size: 0.7rem;
+  line-height: 1;
+  pointer-events: none;
+  /* finom árnyék hogy látszódjon sötét háttéren is */
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.7));
 }
